@@ -1,9 +1,9 @@
-import { TOKEN, PERMISSIONS } from "./constant";
+import { TOKEN, PERMISSIONS, PROFILE } from "./constant";
 import * as CryptoJS from 'crypto-js';
 
 export async function customFetch(...args) {
     let [resource, config, multipart, fullUrl] = args;
-    const token = localStorage.getItem(TOKEN)
+    const token = await asyncLocalStorage.getItem(TOKEN)
     // const companyID = localStorage.getItem(SELECTED_COMPANY_ID)
     // const merchantID = localStorage.getItem(SELECTED_MERCHANT_ID)
 
@@ -55,9 +55,10 @@ export async function customFetch(...args) {
 
 
 
-export async function asyncSetStorage({ token, permissions }) {
+export async function asyncSetStorage({ token, permissions, profile }) {
     await asyncLocalStorage.setItem(TOKEN, token);
     await asyncLocalStorage.setItem(PERMISSIONS, JSON.stringify(permissions));
+    await asyncLocalStorage.setItem(PROFILE, JSON.stringify(profile));
 }
 
 
@@ -65,6 +66,11 @@ export async function getStoragePermissions() {
     let permissions = await asyncLocalStorage.getItem(PERMISSIONS)
     if (permissions) return JSON.parse(permissions)
     return []
+}
+export async function getStorageProfile() {
+    let profile = await asyncLocalStorage.getItem(PROFILE)
+    if (profile) return JSON.parse(profile)
+    return null
 }
 
 

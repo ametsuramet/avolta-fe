@@ -1,4 +1,5 @@
-import { login } from '@/repositories/auth';
+import { Profile } from '@/model/auth';
+import { getProfile, login } from '@/repositories/auth';
 import { asyncSetStorage } from '@/utils/helper';
 import { useState, type FC } from 'react';
 import Swal from "sweetalert2";
@@ -27,15 +28,24 @@ const Login: FC<LoginProps> = ({ }) => {
                         <input value={password} onChange={(el) => setPassword(el.target.value)} type="password" className='form-control' placeholder='****************' />
                     </div>
 
-                    <button onClick={() =>
-                        asyncSetStorage({ token: "INI TOKEN", permissions: [] })
-                            .then(() => location.href = "/")
-                        // login({ email, password, fcmToken, device })
-                        //     .then(v => v.json())
-                        //     .then(v => {
-                        //         asyncSetStorage({token: v.token, permissions: []}).then(() => location.href = "/")
-                        //     })
-                        //     .catch(error => Swal.fire(`Attention`, `${error}`, 'error'))
+                    <button onClick={async() =>{
+                        try {
+                            var loginRes = await login({ email, password, fcmToken, device })
+                            var loginResJson = await loginRes.json()
+                            await asyncSetStorage({token: loginResJson.token, permissions: [], profile: null})
+
+                            var profileRes = await getProfile()
+                            var profileResJson = await profileRes.json()
+                            let permissions = profileResJson.data.permissions as string[]
+                            let profile = profileResJson.data as Profile[]
+                            await asyncSetStorage({token: loginResJson.token, permissions, profile})
+                            location.href = "/"
+                        } catch (error) {
+                            Swal.fire(`Attention`, `${error}`, 'error')
+                        }
+                         
+                       
+                    }
                     } className='text-white mt-16 bg-blue-300 hover:bg-blue-700 py-2 px-8 w-full font-semibold rounded-xl'>Login</button>
                 </div>
             </div>

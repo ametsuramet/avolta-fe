@@ -10,3 +10,8 @@ export const login = async (req: LoginReq) => {
     })
 
 } 
+export const getProfile = async () => {
+    
+    return await customFetch("admin/my")
+
+} 

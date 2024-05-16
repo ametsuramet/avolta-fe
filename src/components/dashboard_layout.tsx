@@ -1,9 +1,12 @@
-import { useEffect, useState, type FC, type ReactNode } from 'react';
+import { useContext, useEffect, useState, type FC, type ReactNode } from 'react';
 import Sidebar from './sidebar';
 import Topbar from './topbar';
 import Footer from './footer';
 import { getStoragePermissions } from '@/utils/helper';
 import NoAccess from './no_access';
+import { ExpandMenuContext } from '@/objects/expand_menu';
+import Loading from './loading';
+import { LoadingContext } from '@/objects/loading_context';
 
 interface DashboardLayoutProps {
     children: ReactNode
@@ -13,6 +16,10 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: FC<DashboardLayoutProps> = ({ children, noPadding, permission }) => {
     const [permissions, setPermissions] = useState<string[]>([]);
+    const { isExpanded, setExpanded } = useContext(ExpandMenuContext)
+    let { isLoading, setIsLoading } = useContext(LoadingContext);
+
+
 
     useEffect(() => {
         getStoragePermissions()
@@ -30,6 +37,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children, noPadding, permis
             </div>
             <Footer />
         </div>
+        {isLoading && <Loading />}
     </section>);
 }
 export default DashboardLayout;

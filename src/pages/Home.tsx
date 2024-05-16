@@ -4,16 +4,32 @@ import DataCard from '@/components/data_card';
 import LineBarChart from '@/components/line_bar_chart';
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { Avatar, Button } from 'rsuite';
 import female from '@/assets/female.svg'
 import male from '@/assets/male.svg'
 import { money } from '@/utils/helper';
+import { getProfile } from '@/repositories/auth';
+import { getEmployees } from '@/repositories/employee';
+import { getAttendances } from '@/repositories/attendance';
+import { Attendance } from '@/model/attendance';
+import Moment from 'react-moment';
 
 
 interface HomeProps { }
 
 const Home: FC<HomeProps> = ({ }) => {
+    const [attendances, setAttendances] = useState<Attendance[]>([]);
+
+    useEffect(() => {
+        getProfile()
+
+        getAttendances({ page: 1, limit: 5 })
+            .then(v => v.json())
+            .then(v => {
+                setAttendances(v.data)
+            })
+    }, []);
     const options: ApexOptions = {
         chart: {
             stacked: true,
@@ -74,7 +90,7 @@ const Home: FC<HomeProps> = ({ }) => {
         }
     };
 
-    
+
 
 
     return (
@@ -111,113 +127,68 @@ const Home: FC<HomeProps> = ({ }) => {
                                 Lihat Semua
                             </Button>
                         </div>
-                        <CustomTable className='' headers={["No", "Nama Karyawan", "Jabatan", "Jam Masuk", "Jam Keluar"]} headerClasses={[]} datasets={[
-                            {
-                                cells: [{ data: "1" }, {
-                                    data: <div className=' items-center flex' >
-                                        <Avatar circle size='sm' bordered src='https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcTHfRpKFKhm3AERxq8X7lEySL0TqfWeaNrV7rOrfLTYhJP8LbX59awytCf-7zwyipP8fTDmnjt7seoi3wU'
-                                            alt='Donald Trump' />
-                                        <span className='ml-4'>
-                                            Donald Trump
-
-                                        </span>
-                                    </div>
-                                }, { data: "Pengusaha" }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>07:00</small>
-                                    </div>
-                                }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>17:00</small>
-                                    </div>
-                                }], className: "hover:bg-gray-50 border-b last:border-b-0"
-                            },
-                            {
-                                cells: [{ data: "2" }, {
-                                    data: <div className=' items-center flex' >
-                                        <Avatar circle size='sm' bordered src='https://www.wonderwall.com/wp-content/uploads/sites/2/2019/07/1059352-premiere-of-sony-pictures-once-upon-a-time-in-hollywood-.jpg'
-                                            alt='Tom Cruise' />
-                                        <span className='ml-4'>
-                                            Tom Cruise
-
-                                        </span>
-                                    </div>
-                                }, { data: "Artis" }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>07:25</small>
-                                    </div>
-                                }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>17:15</small>
-                                    </div>
-                                }], className: "hover:bg-gray-50 border-b last:border-b-0"
-                            },
-                            {
-                                cells: [{ data: "3" }, {
-                                    data: <div className=' items-center flex' >
-                                        <Avatar circle size='sm' bordered src='https://hips.hearstapps.com/hmg-prod/images/actor-johnny-depp-attends-the-jeanne-du-barry-photocall-at-news-photo-1685634329.jpg?crop=1.00xw:0.669xh;0,0.0477xh&resize=640:*'
-                                            alt='Johnny Depp' />
-                                        <span className='ml-4'>
-                                            Johnny Depp
-
-                                        </span>
-                                    </div>
-                                }, { data: "Artis" }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>07:30</small>
-                                    </div>
-                                }, {
-                                    data: <div>
-                                        <p>01 Mei 2024</p>
-                                        <small>18:15</small>
-                                    </div>
-                                }], className: "hover:bg-gray-50 border-b last:border-b-0"
-                            }
-                        ]} />
+                        <CustomTable className='' headers={["No", "Nama Karyawan", "Jabatan", "Jam Masuk", "Jam Keluar"]} headerClasses={[]} datasets={attendances.map(e => ({
+                            cells: [{ data: attendances.indexOf(e) + 1 }, {
+                                data: <div className=' items-center flex' >
+                                    <Avatar circle size='sm' bordered src={e.employee_picture}
+                                        alt={e.employee_name} />
+                                    <span className='ml-4'>
+                                        {e.employee_name}
+                                    </span>
+                                </div>
+                            }, { data: e.employee_position }, {
+                                data: <div className='flex flex-col'>
+                                    <Moment format='DD MMM YYYY'>{e.clock_in}</Moment>
+                                    <small><Moment format='HH:mm'>{e.clock_in}</Moment></small>
+                                </div>
+                            }, {
+                                data: <div className='flex flex-col'>
+                                    <Moment format='DD MMM YYYY'>{e.clock_out}</Moment>
+                                    <small><Moment format='HH:mm'>{e.clock_out}</Moment></small>
+                                </div>
+                            }], className: "hover:bg-gray-50 border-b last:border-b-0"
+                        }))} />
                     </div>
                 </div>
-                <div className='col-span-1 bg-white rounded-xl p-4 hover:shadow-lg h-auto flex flex-col items-center '>
+                <div className='col-span-1 bg-white rounded-xl p-4 hover:shadow-lg  flex flex-col items-center '>
                     <div className='flex w-full'>
                         <h3 className='font-bold text-black text-lg'>{"Komposisi Pegawai"}</h3>
 
                     </div>
-                    <ReactApexChart
-                        type='donut'
-                        options={{
-                            chart: {
+                    <div className='flex-1 w-full'>
+                        <ReactApexChart
+                            type='donut'
+                            options={{
+                                chart: {
 
-                            },
-                            dataLabels: {
-                                enabled: false,
+                                },
+                                dataLabels: {
+                                    enabled: false,
 
-                            },
-                            legend: {
-                                show: false
-                            },
-                            plotOptions: {
-                                pie: {
+                                },
+                                legend: {
+                                    show: false
+                                },
+                                plotOptions: {
+                                    pie: {
 
-                                    donut: {
-                                        size: '40%'
+                                        donut: {
+                                            size: '40%'
+                                        }
                                     }
-                                }
-                            },
-                            tooltip: {
-                                custom:({series, seriesIndex, dataPointIndex, w}) => {
-                                    return `<div class='bg-white flex text-black p-2 items-center justify-center'><img class="mr-2" src="${seriesIndex == 0 ? female : male}" />${money((series[seriesIndex] / (series as number[]).reduce((a,b) => a + b , 0)) * 100)}%</div>`
-                                }
-                            },
-                            labels: ['Perempuan', 'Laki-Laki'],
-                            colors: ["#ED53F0", "#0D62F4"]
-                        }}
-                        series={[300, 556]}
+                                },
+                                tooltip: {
+                                    custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+                                        return `<div class='bg-white flex text-black p-2 items-center justify-center'><img class="mr-2" src="${seriesIndex == 0 ? female : male}" />${money((series[seriesIndex] / (series as number[]).reduce((a, b) => a + b, 0)) * 100)}%</div>`
+                                    }
+                                },
+                                labels: ['Perempuan', 'Laki-Laki'],
+                                colors: ["#ED53F0", "#0D62F4"]
+                            }}
+                            series={[300, 556]}
 
-                    />
+                        />
+                    </div>
                     <p className='text-center'>856 Total Karyawan</p>
                 </div>
             </div>

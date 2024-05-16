@@ -34,3 +34,22 @@ body {
     color: #8f53f0 !important;
 }
 
+
+.h-line {
+    @apply h-px my-8 bg-gray-200 border-0
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.0);
+    position: fixed;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  

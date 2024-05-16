@@ -8,11 +8,11 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: "@", replacement: resolve(__dirname, "./src") },
-      // {
-      //   // Allow moment.js to be used as an ESM module
-      //   find: /^moment$/,
-      //   replacement: path.resolve(__dirname, "./node_modules/moment/moment.js"),
-      // },
+      {
+        // Allow moment.js to be used as an ESM module
+        find: /^moment$/,
+        replacement: path.resolve(__dirname, "./node_modules/moment/moment.js"),
+      },
     ]
 
   },

@@ -4,3 +4,11 @@ export interface LoginReq {
     fcmToken: string
     device: string
 }
+
+
+export interface Profile {
+    full_name: string
+    picture: string
+    email: string
+    role_name: string
+}
