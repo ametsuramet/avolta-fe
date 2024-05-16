@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+    font-family: "Nunito", sans-serif;
+    color: #757575;
+    background-color: #F6F7F9;
+}
+
+.apexcharts-text, .apexcharts-legend-text {
+    font-family: "Nunito", sans-serif !important;
+}
+
+.login-wrapper {
+    @apply bg-login-bg
+}
+
+.form-control {
+    @apply bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500
+}
+
+.required {
+    @apply text-red-600
+}
+
+.rs-sidenav-default, .rs-sidenav-default .rs-dropdown-toggle, .rs-sidenav-default .rs-sidenav-item, .rs-sidenav-default .rs-sidenav-toggle-button {
+    background-color: white;
+}
+
+.rs-sidenav-item.rs-sidenav-item-active {
+    color: #8f53f0 !important;
+}
+
