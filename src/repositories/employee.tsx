@@ -26,6 +26,12 @@ export const getEmployees = async (pagination: PaginationReq, filter?: EmployeeF
         if (filter.startedWork) {
             params["started_work"] = filter.startedWork.toISOString()
         }
+        if (filter.startedWorkEnd) {
+            params["started_work_end"] = filter.startedWorkEnd.toISOString()
+        }
+        if (filter.download) {
+            params["download"] = "1"
+        }
     }
     return await customFetch(`admin/employee?${new URLSearchParams(params)}`)
 

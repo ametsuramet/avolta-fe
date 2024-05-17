@@ -10,7 +10,7 @@ import { getJobTitles } from '@/repositories/job_title';
 import { TOKEN } from '@/utils/constant';
 import { asyncLocalStorage } from '@/utils/helper';
 import { MagnifyingGlassIcon } from '@heroicons/react/16/solid';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFunnel } from 'react-icons/bs';
@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, DatePicker, DateRangePicker, Drawer, Placeholder, SelectPicker, Uploader } from 'rsuite';
 import { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
+import { saveAs } from 'file-saver'
+
 
 interface EmployeePageProps { }
 
@@ -34,8 +36,8 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [openWithHeader, setOpenWithHeader] = useState(false)
     const [token, setToken] = useState("");
-    const [dateRange, setDateRange] = useState<DateRange | null>([moment().subtract(1, "days").toDate(), moment().toDate()]);
-    const [date, setDate] = useState<Date|null>(moment().toDate());
+    const [dateRange, setDateRange] = useState<DateRange | null>(null);
+    const [date, setDate] = useState<Date | null>(null);
     const [inputGender, setInputGender] = useState(null);
     const [inputAge, setInputAge] = useState(null);
     const [inputJobTitleID, setInputJobTitleID] = useState(null);
@@ -47,7 +49,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
         getAllJobTitles("")
         asyncLocalStorage.getItem(TOKEN)
             .then(v => setToken(v))
-    }, [page, limit, search, date, inputGender, inputAge, inputJobTitleID]);
+    }, [page, limit, search, date, dateRange, inputGender, inputAge, inputJobTitleID]);
 
     const getAllJobTitles = async (s: string) => {
         getJobTitles({ page: 1, limit: 5, search: s })
@@ -62,7 +64,8 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                 ageRange: inputAge != null ? [moment().subtract(inputAge, "years").toDate(), moment().subtract(inputAge + 1, "years").toDate()] : null,
                 jobTitleID: inputJobTitleID,
                 gender: inputGender,
-                startedWork: date,
+                startedWork: dateRange != null ? dateRange[0] : date,
+                startedWorkEnd: dateRange != null ? dateRange[1] : null,
             })
             let rJson = await r.json()
             setEmployees(rJson.data)
@@ -118,7 +121,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                         activePage={page}
                         setActivePage={(v) => setPage(v)}
                         changeLimit={(v) => setLimit(v)}
-                        headers={["No", "Nama Karyawan", "NIK", "Jenis Kelamin", "Umur", "Jabatan", "Tanggal Masuk"]} headerClasses={[]} datasets={employees.map(e => ({
+                        headers={["No", "Nama Karyawan", "NIK", "Jenis Kelamin", "Umur", "Jabatan", "Tanggal Masuk", ""]} headerClasses={[]} datasets={employees.map(e => ({
                             cells: [
                                 { data: ((page - 1) * limit) + (employees.indexOf(e) + 1) },
                                 {
@@ -135,6 +138,9 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                                 { data: e.date_of_birth ? moment().diff(moment(e.date_of_birth), 'years') : '' },
                                 { data: e.job_title },
                                 { data: <Moment format='DD MMM YYYY'>{e.started_work}</Moment> },
+                                {data: <div>
+                                    <EyeIcon className='w-4 text-blue-400  hover:text-blue-800 cursor-pointer' />
+                                </div>}
                             ]
                         }))} />
                 </div>
@@ -149,6 +155,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                             setInputGender(null)
                             setInputJobTitleID(null)
                             setDate(null)
+                            setDateRange(null)
                         }} >
                             <XMarkIcon className='w-4 mr-2' />
                             Clear Filter
@@ -167,15 +174,44 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                         <SelectPicker placeholder="Jabatan" searchable={false} data={jobTitles.map(e => ({ value: e.id, label: e.name }))} value={inputJobTitleID} onSelect={(val) => setInputJobTitleID(val)} block />
                     </InlineForm>
                     <InlineForm title="Tgl Masuk">
-                        <DatePicker className='w-full' value={date} onChange={(val) => setDate(val)} placement="bottomEnd" format='dd/MM/yyyy' />
+                        <DateRangePicker className='w-full' value={dateRange} onChange={(val) => setDateRange(val)} placement="bottomEnd" format='dd/MM/yyyy' />
                     </InlineForm>
+                    <Button onClick={async () => {
 
+                        try {
+                            setIsLoading(true)
+                            var resp = await   getEmployees({ page, limit, search }, {
+                                ageRange: inputAge != null ? [moment().subtract(inputAge, "years").toDate(), moment().subtract(inputAge + 1, "years").toDate()] : null,
+                                jobTitleID: inputJobTitleID,
+                                gender: inputGender,
+                                startedWork: dateRange != null ? dateRange[0] : date,
+                                startedWorkEnd: dateRange != null ? dateRange[1] : null,
+                                download: true
+                            })
+                            let filename = resp.headers.get("Content-Description")
+                            var respBlob = await resp.blob()
+
+                            saveAs(respBlob, filename ?? "download.xlsx")
+                        } catch (error) {
+                            
+                        } finally {
+                            setIsLoading(false)
+
+                        }
+
+                      
+                    }} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Laporan</Button>
                     <div className='mb-4'></div>
 
                     <hr className='h-line' />
                     <h3 className=' text-2xl text-black'>Unggah Data Karyawan</h3>
                     <p className='mb-4'>Silakan download terlebih dahulu templat data karyawan</p>
                     <Uploader
+                        onSuccess={async (resp) => {
+                            Swal.fire("Perhatian", "Unggah File Berhasil", "success")
+
+                            console.log(resp)
+                        }}
                         headers={{
                             authorization: `Bearer ${token}`
                         }}

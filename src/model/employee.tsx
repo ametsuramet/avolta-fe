@@ -32,4 +32,6 @@ export interface EmployeeFilter  {
   jobTitleID?: string | null
   gender?: string | null
   startedWork?: Date  | null
+  startedWorkEnd?: Date  | null
+  download?: boolean  | null
 }

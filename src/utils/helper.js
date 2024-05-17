@@ -125,3 +125,4 @@ export const money = (val, friction = 2) => {
     if (!val) return 0
     return val.toLocaleString('id-ID', { maximumFractionDigits: friction });
 }
+
