@@ -126,3 +126,22 @@ export const money = (val, friction = 2) => {
     return val.toLocaleString('id-ID', { maximumFractionDigits: friction });
 }
 
+
+
+
+export function setNullString(val) {
+    return { Valid: val != null && val != "", String: val }
+}
+
+export function setNullTime(val) {
+    return { Valid: val != null && val != "", Time: val }
+}
+
+export function getFullName(f, m, l) {
+    let fullName = []
+    if (f) fullName.push(f)
+    if (m) fullName.push(m)
+    if (l) fullName.push(l)
+
+    return fullName.join(" ")
+}

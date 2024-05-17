@@ -1,4 +1,4 @@
-import { EmployeeFilter } from "@/model/employee";
+import { Employee, EmployeeFilter, EmployeeReq } from "@/model/employee";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
 
@@ -35,4 +35,22 @@ export const getEmployees = async (pagination: PaginationReq, filter?: EmployeeF
     }
     return await customFetch(`admin/employee?${new URLSearchParams(params)}`)
 
-} 
+}
+
+export const addEmployee = async (req: EmployeeReq) => {
+    return await customFetch(`admin/employee`, {
+        method: "POST",
+        body: JSON.stringify(req)
+    })
+}
+
+export const editEmployee = async (id:string, req: EmployeeReq) => {
+    return await customFetch(`admin/employee/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(req)
+    })
+}
+
+export const getEmployeeDetail = async (id: string) => {
+    return await customFetch(`admin/employee/${id}`)
+}

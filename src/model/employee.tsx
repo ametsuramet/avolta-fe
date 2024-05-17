@@ -1,3 +1,4 @@
+import { NullString, NullTime } from "@/objects/null_object"
 import { DateRange } from "rsuite/esm/DateRangePicker"
 
 export interface Employee {
@@ -9,9 +10,11 @@ export interface Employee {
   username: string
   phone: string
   job_title: string
+  job_title_id: string
   grade: string
   address: string
   picture?: string
+  picture_url?: string
   cover: string
   date_of_birth?: string
   employee_identity_number: string
@@ -35,3 +38,24 @@ export interface EmployeeFilter  {
   startedWorkEnd?: Date  | null
   download?: boolean  | null
 }
+
+
+export interface EmployeeReq {
+  email: string
+  full_name: string
+  phone: string
+  picture?: NullString
+  job_title_id: NullString
+  address: string
+  date_of_birth?: NullTime
+  employee_identity_number: string
+  basic_salary: number
+  positional_allowance: number
+  transport_allowance: number
+  meal_allowance: number
+  non_taxable_income_level_code: string
+  tax_payer_number: string
+  gender: string
+  started_work?: NullTime
+}
+
