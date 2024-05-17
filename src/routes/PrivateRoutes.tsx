@@ -4,6 +4,7 @@ import Home from "../pages/Home"
 import EmployeePage from "@/pages/Employee"
 import NotFound from "@/pages/NotFound"
 import EmployeeDetail from "@/pages/EmployeeDetail"
+import AttendancePage from "@/pages/Attendance"
 
 
 interface PrivateRoutesProps { }
@@ -15,6 +16,7 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/' element={<Home />} />
             <Route path='/employee' element={<EmployeePage />} />
             <Route path='/employee/:employeeId' element={<EmployeeDetail />} />
+            <Route path='/attendance' element={<AttendancePage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     )

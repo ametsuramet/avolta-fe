@@ -13,7 +13,9 @@ import { useParams } from 'react-router-dom';
 import { Button, Col, DatePicker, Message, Panel, Row, SelectPicker, Uploader, toaster } from 'rsuite';
 import Swal from 'sweetalert2';
 import AvatarIcon from '@rsuite/icons/legacy/Avatar';
-import { TOKEN } from '@/utils/constant';
+import { NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
+import { successToast } from '@/utils/helperUi';
+import { constants } from 'buffer';
 
 interface EmployeeDetailProps { }
 
@@ -86,6 +88,8 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 picture: setNullString(employee?.picture),
             })
             getDetail()
+            successToast("Data karyawan berhasil di update")
+
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -225,7 +229,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                     picture: response.data.path,
                                     picture_url: response.data.url,
                                 })
-                                
+
                                 // toaster.push(<Message type="success">Uploaded successfully</Message>);
                             }}
                             onError={() => {
@@ -233,7 +237,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 toaster.push(<Message type="error">Upload failed</Message>);
                             }}
                         >
-                            <button style={{ width: 150, height: 150 }}>
+                            <button style={{ width: 300, height: 300 }}>
 
                                 {employee?.picture_url ? (
                                     <img src={employee?.picture_url} width="100%" height="100%" />
@@ -285,6 +289,18 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 })
                             }} />
                         </InlineForm>
+                        <InlineForm title="Kode PTKP">
+                            <SelectPicker placeholder="Kode PTKP" searchable={false} data={NON_TAXABLE_CODES} value={employee?.non_taxable_income_level_code} onSelect={(val) => {
+                                setEmployee({
+                                    ...employee!,
+                                    non_taxable_income_level_code: val,
+                                })
+                            }} block />
+                        </InlineForm>
+
+                        <Button onClick={async () => {
+                            update()
+                        }} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
                     </Panel>
 
                 </div>

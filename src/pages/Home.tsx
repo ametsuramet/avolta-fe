@@ -136,7 +136,7 @@ const Home: FC<HomeProps> = ({ }) => {
                                         {e.employee_name}
                                     </span>
                                 </div>
-                            }, { data: e.employee_position }, {
+                            }, { data: e.employee_job_title }, {
                                 data: <div className='flex flex-col'>
                                     <Moment format='DD MMM YYYY'>{e.clock_in}</Moment>
                                     <small><Moment format='HH:mm'>{e.clock_in}</Moment></small>

@@ -53,3 +53,7 @@ body {
     bottom: 0;
   }
   
+
+  .rs-picker-has-value .rs-btn .rs-picker-toggle-value, .rs-picker-has-value .rs-picker-toggle .rs-picker-toggle-value {
+    color: #757575;
+}
