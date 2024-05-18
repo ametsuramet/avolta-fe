@@ -107,8 +107,8 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 let weeklySchedules = [...schedules.filter(e => e.schedule_type == "WEEKLY")]
                 let singleSchedules = [...schedules.filter(e => e.schedule_type == "SINGLE_DATE")]
                 let dateRangeSchedules = [...schedules.filter(e => e.schedule_type == "DATERANGE")]
-
-                let now = moment()
+                console.log("weeklySchedules", weeklySchedules)
+                let now = moment(dateRange[0])
                 let firstDay = now.clone().startOf('month').date()
                 let endDay = now.clone().endOf('month').date()
                 let i = 1
@@ -117,6 +117,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                     let selectedSchedules: Schedule[] = []
                     let day = now.clone().startOf('month').add(index - 1, 'day')
                     let weekDay = day.format("dddd").toLowerCase()
+                    console.log(day.toISOString())
                     selectedSchedules = [
                         ...selectedSchedules,
                         ...weeklySchedules.filter(e => e.week_day.toLowerCase() == weekDay.toLowerCase()),
