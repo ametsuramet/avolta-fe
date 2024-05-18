@@ -22,6 +22,7 @@
     "react-icons": "^5.2.1",
     "react-moment": "^1.1.3",
     "react-router-dom": "^6.23.1",
+    "react-select": "^5.8.0",
     "rsuite": "^5.60.2",
     "styled-components": "^6.1.11",
     "sweetalert2": "^11.11.0"

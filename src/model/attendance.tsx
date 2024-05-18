@@ -15,6 +15,7 @@ export interface Attendance {
     employee_name: string
     employee_job_title: string
     employee_picture: string
+    employee_identity_number: string
   }
   
   export interface AttendanceReq {
@@ -33,9 +34,10 @@ export interface Attendance {
   
 
   export interface AttendanceFilter  {
-    dateRange: DateRange | null
+    dateRange?: DateRange | null
     jobTitleID?: string | null
     employeeIDs?: string | null
+    employeeID?: string | null
     download?: boolean  | null
     gender?: string | null
   }

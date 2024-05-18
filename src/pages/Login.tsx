@@ -1,12 +1,15 @@
 import { Profile } from '@/model/auth';
+import { LoadingContext } from '@/objects/loading_context';
 import { getProfile, login } from '@/repositories/auth';
 import { asyncSetStorage } from '@/utils/helper';
-import { useState, type FC } from 'react';
+import { useContext, useState, type FC } from 'react';
+import { FaCircleNotch } from 'react-icons/fa';
 import Swal from "sweetalert2";
 
 interface LoginProps { }
 
 const Login: FC<LoginProps> = ({ }) => {
+    let { isLoading, setIsLoading } = useContext(LoadingContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fcmToken, setFcmToken] = useState("");
@@ -28,8 +31,11 @@ const Login: FC<LoginProps> = ({ }) => {
                         <input value={password} onChange={(el) => setPassword(el.target.value)} type="password" className='form-control' placeholder='****************' />
                     </div>
 
-                    <button onClick={async() =>{
+                    <button 
+                    disabled={isLoading}
+                     onClick={async() =>{
                         try {
+                            setIsLoading(true)
                             var loginRes = await login({ email, password, fcmToken, device })
                             var loginResJson = await loginRes.json()
                             await asyncSetStorage({token: loginResJson.token, permissions: [], profile: null})
@@ -42,11 +48,13 @@ const Login: FC<LoginProps> = ({ }) => {
                             location.href = "/"
                         } catch (error) {
                             Swal.fire(`Attention`, `${error}`, 'error')
+                        } finally {
+                            setIsLoading(false)
                         }
                          
                        
                     }
-                    } className='text-white mt-16 bg-blue-300 hover:bg-blue-700 py-2 px-8 w-full font-semibold rounded-xl'>Login</button>
+                    } className={`text-white mt-16 inline-flex items-center justify-center bg-blue-300 hover:bg-blue-700 py-2 px-8 w-full font-semibold rounded-xl ${isLoading && 'disabled:cursor-not-allowed'}`}>{isLoading && <FaCircleNotch className='animate-spin mr-2' />} Login</button>
                 </div>
             </div>
         </div>

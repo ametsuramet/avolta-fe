@@ -2,13 +2,17 @@ import CustomTable from '@/components/custom_table';
 import DashboardLayout from '@/components/dashboard_layout';
 import InlineForm from '@/components/inline_form';
 import { Attendance } from '@/model/attendance';
+import { Employee } from '@/model/employee';
 import { JobTitle } from '@/model/job_title';
 import { LoadingContext } from '@/objects/loading_context';
 import { Pagination } from '@/objects/pagination';
+import { SelectOption } from '@/objects/select_option';
 import { getAttendances } from '@/repositories/attendance';
+import { getEmployees } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { TOKEN } from '@/utils/constant';
 import { asyncLocalStorage } from '@/utils/helper';
+import { colourStyles, multiColourStyles } from '@/utils/style';
 import { MagnifyingGlassIcon } from '@heroicons/react/16/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { saveAs } from 'file-saver';
@@ -20,6 +24,7 @@ import { PiFloppyDiskFill } from 'react-icons/pi';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useNavigate } from 'react-router-dom';
+import Select, { MultiValue } from 'react-select';
 import { Avatar, Button, DatePicker, DateRangePicker, Drawer, Modal, SelectPicker, Uploader } from 'rsuite';
 import { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
@@ -38,7 +43,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [openWithHeader, setOpenWithHeader] = useState(false)
     const [token, setToken] = useState("");
-    const [dateRange, setDateRange] = useState<DateRange | null>(null);
+    const [dateRange, setDateRange] = useState<DateRange | null>([moment().subtract(1, 'months').toDate(), moment().toDate()]);
     const [date, setDate] = useState<Date | null>(null);
     const [dateBirth, setDateBirth] = useState<Date | null>(null);
     const [dateStarted, setDateStarted] = useState<Date | null>(null);
@@ -55,14 +60,20 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     const [attendanceIdentityNumber, setAttendanceIdentityNumber] = useState("")
     const [jobTitleID, setJobTitleID] = useState("")
     const [gender, setGender] = useState("");
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [selectedEmployee, setselectedEmployee] = useState<MultiValue<SelectOption>>();
 
+    useEffect(() => {
+        getAllJobTitles("")
+        getAllEmployees("")
+        asyncLocalStorage.getItem(TOKEN)
+            .then(v => setToken(v))
+    }, []);
 
     useEffect(() => {
         getAllAttendance()
-        getAllJobTitles("")
-        asyncLocalStorage.getItem(TOKEN)
-            .then(v => setToken(v))
-    }, [page, limit, search, date, dateRange, inputGender, inputAge, inputJobTitleID]);
+
+    }, [page, limit, search, date, dateRange, inputGender, inputAge, inputJobTitleID, selectedEmployee]);
 
     const getAllJobTitles = async (s: string) => {
         getJobTitles({ page: 1, limit: 5, search: s })
@@ -77,7 +88,8 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 dateRange: dateRange,
                 jobTitleID: inputJobTitleID,
                 gender: inputGender,
-                download: true
+                download: false,
+                employeeIDs: selectedEmployee?.map(e => e.value).join(",")
 
             })
             let rJson = await r.json()
@@ -88,6 +100,12 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const getAllEmployees = (s: string) => {
+        getEmployees({ page: 1, limit: 5, search: s })
+            .then(v => v.json())
+            .then(v => setEmployees(v.data))
     }
 
     const clearForm = () => {
@@ -110,7 +128,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                     <h3 className='font-bold mb-4 text-black text-lg'>{"Absensi"}</h3>
                     <div>
 
-                        <Button onClick={() => setOpen(true)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-2'><IoAddCircleOutline className='text-blue-600 mr-2' /> Tambah</Button>
+                        {/* <Button onClick={() => setOpen(true)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-2'><IoAddCircleOutline className='text-blue-600 mr-2' /> Tambah</Button> */}
                         <Button onClick={() => setOpenWithHeader(true)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800'><BsFunnel className='text-blue-600 mr-2' /> Filter</Button>
 
                     </div>
@@ -149,7 +167,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                         activePage={page}
                         setActivePage={(v) => setPage(v)}
                         changeLimit={(v) => setLimit(v)}
-                        headers={["No", "Nama Karyawan", "Jabatan", "Jam Masuk", "Jam Keluar"]} headerClasses={[]} datasets={attendances.map(e => ({
+                        headers={["No", "Nama Karyawan", "NIK","Jabatan", "Jam Masuk", "Jam Keluar"]} headerClasses={[]} datasets={attendances.map(e => ({
                             cells: [{ data: attendances.indexOf(e) + 1 }, {
                                 data: <div className=' items-center flex' >
                                     <Avatar circle size='sm' bordered src={e.employee_picture}
@@ -158,7 +176,9 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                                         {e.employee_name}
                                     </span>
                                 </div>
-                            }, { data: e.employee_job_title }, {
+                            }, 
+                            {data: e.employee_identity_number},
+                            { data: e.employee_job_title }, {
                                 data: <div className='flex flex-col'>
                                     <Moment format='DD MMM YYYY'>{e.clock_in}</Moment>
                                     <small><Moment format='HH:mm'>{e.clock_in}</Moment></small>
@@ -192,6 +212,19 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 </Drawer.Header>
                 <Drawer.Body className='p-8'>
                     <h3 className=' text-2xl text-black'>Filter</h3>
+                    <InlineForm title="Karyawan">
+                        <Select< SelectOption, true> isMulti styles={multiColourStyles}
+                            options={employees.map(e => ({ value: e.id, label: e.full_name }))}
+                            value={selectedEmployee!}
+                            onChange={(option: MultiValue<SelectOption>): void => {
+                                setselectedEmployee(option!)
+                            }}
+                            onInputChange={(val) => {
+                                getAllEmployees(val)
+                            }}
+
+                        />
+                    </InlineForm>
                     <InlineForm title="Jenis Kelamin">
                         <SelectPicker placeholder="Jenis Kelamin" searchable={false} data={[{ value: "m", label: "Laki-laki" }, { value: "f", label: "Perempuan" }]} value={inputGender} onSelect={(val) => setInputGender(val)} block />
                     </InlineForm>
@@ -211,7 +244,8 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                             var resp = await getAttendances({ page, limit, search }, {
                                 dateRange: dateRange,
                                 jobTitleID: inputJobTitleID,
-                                gender:inputGender,
+                                employeeIDs: selectedEmployee?.map(e => e.value).join(","),
+                                gender: inputGender,
                                 download: true
                             })
                             let filename = resp.headers.get("Content-Description")
@@ -253,7 +287,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 </Drawer.Body>
             </Drawer>
 
-            <Modal size={"lg"} open={open} onClose={() => setOpen(false)}>
+            {/* <Modal size={"lg"} open={open} onClose={() => setOpen(false)}>
                 <Modal.Header>
                     <Modal.Title>Form Karyawan</Modal.Title>
                 </Modal.Header>
@@ -378,7 +412,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                         <PiFloppyDiskFill className='mr-2' /> Simpan
                     </Button>
                 </Modal.Footer>
-            </Modal>
+            </Modal> */}
         </DashboardLayout>
     );
 }

@@ -24,6 +24,9 @@ export const getAttendances = async  (pagination: PaginationReq, filter?: Attend
         if (filter.employeeIDs) {
             params["employee_ids"] = filter.employeeIDs
         }
+        if (filter.employeeID) {
+            params["employee_id"] = filter.employeeID
+        }
         if (filter.gender) {
             params["gender"] = filter.gender
         }
