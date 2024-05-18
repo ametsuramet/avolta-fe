@@ -29,8 +29,21 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			.then(v => setProfile(v))
 	}, []);
 
+	const getOpenKey = () => {
+		switch (location.pathname) {
+			case "/schedule":
+			case "/job_title":
+			case "/organization":
+				return "/company"
+		
+			default:
+				return location.pathname
+		}
+		
+	}
+
 	return (<div style={{ width: isExpanded ? 240 : 56 }} className='bg-white' >
-		<Sidenav expanded={isExpanded} defaultOpenKeys={[]} className='bg-white'>
+		<Sidenav expanded={isExpanded} defaultOpenKeys={[getOpenKey()]} className='bg-white'>
 			<Sidenav.Header>
 				<div className='flex justify-center h-16 flex-col items-center' >
 					{isExpanded ?
@@ -69,19 +82,16 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item eventKey="/payroll" icon={<LuWallet2 className='rs-icon' />}>
 						Payroll
 					</Nav.Item>
-					<Nav.Item eventKey="/company" icon={<LuBuilding2 className='rs-icon' />}>
-						Perusahaan
-					</Nav.Item>
+				
 					<Nav.Item eventKey="/report" icon={<LuBarChartBig className='rs-icon' />}>
 						Laporan
 					</Nav.Item>
-					{/* <Nav.Menu placement="rightStart" eventKey="3" title="Advanced" icon={<MagicIcon />}>
-						<Nav.Item eventKey="3-1">Geo</Nav.Item>
-						<Nav.Item eventKey="3-2">Devices</Nav.Item>
-						<Nav.Item eventKey="3-3">Loyalty</Nav.Item>
-						<Nav.Item eventKey="3-4">Visit Depth</Nav.Item>
+					<Nav.Menu placement="rightStart" eventKey="/company" title="Perusahaan" icon={<LuBuilding2 className='rs-icon' />}>
+						<Nav.Item onClick={() => nav('/schedule')}  eventKey="/schedule" >Jadwal</Nav.Item>
+						<Nav.Item onClick={() => nav('/job_title')}  eventKey="/job_title">Posisi / Jabatan</Nav.Item>
+						<Nav.Item onClick={() => nav('/organization')}  eventKey="/organization">Organisasi</Nav.Item>
 					</Nav.Menu>
-					 */}
+					
 				</Nav>
 			</Sidenav.Body>
 		</Sidenav>

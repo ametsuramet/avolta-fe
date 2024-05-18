@@ -1,5 +1,6 @@
 import { TOKEN, PERMISSIONS, PROFILE } from "./constant";
 import * as CryptoJS from 'crypto-js';
+import Swal from "sweetalert2";
 
 export async function customFetch(...args) {
     let [resource, config, multipart, fullUrl] = args;
@@ -144,4 +145,26 @@ export function getFullName(f, m, l) {
     if (l) fullName.push(l)
 
     return fullName.join(" ")
+}
+
+
+export function confirmDelete(confirmed, title, desc, confirmText) {
+    Swal.fire({
+        title: title ?? "Anda Yakin",
+        text: desc ?? "Anda tidak akan dapat mengembalikan proses ini!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: confirmText ?? "Ya, Hapus!",
+        cancelButtonText: "Batal"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            confirmed()
+        }
+    });
+}
+
+export function pad(num, size) {
+    return num.toString().padStart(size, "0");
 }

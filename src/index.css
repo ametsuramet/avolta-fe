@@ -57,3 +57,15 @@ body {
   .rs-picker-has-value .rs-btn .rs-picker-toggle-value, .rs-picker-has-value .rs-picker-toggle .rs-picker-toggle-value {
     color: #575757;
 }
+
+.calendar-todo-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.calendar-todo-list li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

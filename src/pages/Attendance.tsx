@@ -264,7 +264,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                     }} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Laporan</Button>
                     <div className='mb-4'></div>
 
-                    <hr className='h-line' />
+                    {/* <hr className='h-line' />
                     <h3 className=' text-2xl text-black'>Unggah Data Karyawan</h3>
                     <p className='mb-4'>Silakan download terlebih dahulu templat data karyawan</p>
                     <Uploader
@@ -282,7 +282,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                             <span>Click or Drag files to this area to upload</span>
                         </div>
                     </Uploader>
-                    <Button onClick={() => window.open(`/file/sample_attendance.xlsx`)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Template</Button>
+                    <Button onClick={() => window.open(`/file/sample_attendance.xlsx`)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Template</Button> */}
                     {/* <Button className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800'><RiFileUploadFill className='text-blue-600 mr-2' /> Unggah Data Karyawan</Button> */}
                 </Drawer.Body>
             </Drawer>
