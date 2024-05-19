@@ -16,6 +16,7 @@ export interface Attendance {
     employee_job_title: string
     employee_picture: string
     employee_identity_number: string
+    overtime: string
   }
   
   export interface AttendanceReq {

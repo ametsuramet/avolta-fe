@@ -39,8 +39,22 @@ export const editSchedule = async (id:string, req: ScheduleReq) => {
     })
 }
 
-export const deletetSchedule = async (id:string) => {
+export const addEmployeeSchedule = async (id:string, employeeId: string) => {
+    return await customFetch(`admin/schedule/${id}/AddEmployee`, {
+        method: "PUT",
+        body: JSON.stringify({
+            employee_id: employeeId
+        })
+    })
+}
+
+export const deleteSchedule = async (id:string) => {
     return await customFetch(`admin/schedule/${id}`, {
+        method: "DELETE",
+    })
+}
+export const deleteEmployeeSchedule = async (id:string, employeeId:string) => {
+    return await customFetch(`admin/schedule/${id}/DeleteEmployee/${employeeId}`, {
         method: "DELETE",
     })
 }

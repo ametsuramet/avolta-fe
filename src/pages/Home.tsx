@@ -8,7 +8,7 @@ import { useEffect, useState, type FC } from 'react';
 import { Avatar, Button } from 'rsuite';
 import female from '@/assets/female.svg'
 import male from '@/assets/male.svg'
-import { money } from '@/utils/helper';
+import { initials, money } from '@/utils/helper';
 import { getProfile } from '@/repositories/auth';
 import { getEmployees } from '@/repositories/employee';
 import { getAttendances } from '@/repositories/attendance';
@@ -131,7 +131,7 @@ const Home: FC<HomeProps> = ({ }) => {
                             cells: [{ data: attendances.indexOf(e) + 1 }, {
                                 data: <div className=' items-center flex' >
                                     <Avatar circle size='sm' bordered src={e.employee_picture}
-                                        alt={e.employee_name} />
+                                        alt={initials(e.employee_name)} />
                                     <span className='ml-4'>
                                         {e.employee_name}
                                     </span>

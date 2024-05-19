@@ -1,7 +1,7 @@
 import { TOKEN, PERMISSIONS, PROFILE } from "./constant";
 import * as CryptoJS from 'crypto-js';
 import Swal from "sweetalert2";
-
+import moment from 'moment';
 export async function customFetch(...args) {
     let [resource, config, multipart, fullUrl] = args;
     const token = await asyncLocalStorage.getItem(TOKEN)
@@ -44,7 +44,7 @@ export async function customFetch(...args) {
         return response;
     } catch (error) {
 
-        if (error == "Token is expired") {
+        if (`${error}`.includes("token is expired")) {
             await clearStorage()
             location.href = "/login"
         }
@@ -168,3 +168,43 @@ export function confirmDelete(confirmed, title, desc, confirmText) {
 export function pad(num, size) {
     return num.toString().padStart(size, "0");
 }
+
+
+export function getDays(schedule) {
+    let days = []
+    if (schedule.sunday) {
+        days.push("Minggu")
+    }
+    if (schedule.monday) {
+        days.push("Senin")
+    }
+    if (schedule.tuesday) {
+        days.push("Selasa")
+    }
+    if (schedule.wednesday) {
+        days.push("Rabu")
+    }
+    if (schedule.thursday) {
+        days.push("Kamis")
+    }
+    if (schedule.friday) {
+        days.push("Jumat")
+    }
+    if (schedule.saturday) {
+        days.push("Sabtu")
+    }
+
+    return days.join(", ")
+}
+export function initials(name) {
+    if (!name) return ""
+    return name.split(" ").map((n) => `${n[0]}`.toUpperCase()).join("");
+}
+export function countOverTime(item) {
+    let start = moment(item.clock_in).format("YYYY-MM-DD 00:00:00")
+    let end = moment(item.clock_in).format("YYYY-MM-DD") + " " + item.overtime
+    let hours = moment(end).diff(moment(start), 'hours')
+    let minutes = moment(end).diff(moment(start), 'minutes') % 60
+    return `${hours ? hours + " Jam" : ''} ${minutes ? minutes + ' menit' : ""}`
+}
+

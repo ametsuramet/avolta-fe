@@ -11,7 +11,7 @@ import { getAttendances } from '@/repositories/attendance';
 import { getEmployees } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { TOKEN } from '@/utils/constant';
-import { asyncLocalStorage } from '@/utils/helper';
+import { asyncLocalStorage, initials } from '@/utils/helper';
 import { colourStyles, multiColourStyles } from '@/utils/style';
 import { MagnifyingGlassIcon } from '@heroicons/react/16/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -171,7 +171,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                             cells: [{ data: attendances.indexOf(e) + 1 }, {
                                 data: <div className=' items-center flex' >
                                     <Avatar circle size='sm' bordered src={e.employee_picture}
-                                        alt={e.employee_name} />
+                                        alt={initials(e.employee_name)} />
                                     <span className='ml-4  hover:font-bold cursor-pointer' onClick={() => nav(`/employee/${e.employee_id}`)}>
                                         {e.employee_name}
                                     </span>
@@ -264,14 +264,15 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                     }} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Laporan</Button>
                     <div className='mb-4'></div>
 
-                    {/* <hr className='h-line' />
-                    <h3 className=' text-2xl text-black'>Unggah Data Karyawan</h3>
+                    <hr className='h-line' />
+                    <h3 className=' text-2xl text-black'>Unggah Data Absensi</h3>
                     <p className='mb-4'>Silakan download terlebih dahulu templat data karyawan</p>
                     <Uploader
                         onSuccess={async (resp) => {
                             Swal.fire("Perhatian", "Unggah File Berhasil", "success")
 
                             console.log(resp)
+                            nav(`/attendance/import/${resp.data}`)
                         }}
                         headers={{
                             authorization: `Bearer ${token}`
@@ -282,7 +283,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                             <span>Click or Drag files to this area to upload</span>
                         </div>
                     </Uploader>
-                    <Button onClick={() => window.open(`/file/sample_attendance.xlsx`)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Template</Button> */}
+                    <Button onClick={() => window.open(`/file/sample_attendance.xlsx`)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-4'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Template</Button>
                     {/* <Button className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800'><RiFileUploadFill className='text-blue-600 mr-2' /> Unggah Data Karyawan</Button> */}
                 </Drawer.Body>
             </Drawer>

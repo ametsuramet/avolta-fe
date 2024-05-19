@@ -7,18 +7,18 @@ import { LoadingContext } from '@/objects/loading_context';
 import { Pagination } from '@/objects/pagination';
 import { SelectOption } from '@/objects/select_option';
 import { getEmployees } from '@/repositories/employee';
-import { addSchedule, deletetSchedule, getSchedules } from '@/repositories/schedule';
-import { confirmDelete, pad, randomStr } from '@/utils/helper';
+import { addEmployeeSchedule, addSchedule, deleteEmployeeSchedule, deleteSchedule, editSchedule, getScheduleDetail, getSchedules } from '@/repositories/schedule';
+import { confirmDelete, initials, pad, randomStr } from '@/utils/helper';
 import { toolTip } from '@/utils/helperUi';
 import { colourStyles, multiColourStyles } from '@/utils/style';
-import { ChevronDownIcon, ChevronUpIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, EyeIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFloppy2 } from 'react-icons/bs';
 import { FaClock } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import Select, { MultiValue, SingleValue } from 'react-select';
-import { Avatar, AvatarGroup, Badge, Button, Calendar, DatePicker, Modal, Popover, Whisper } from 'rsuite';
+import { Avatar, AvatarGroup, Badge, Button, Calendar, DatePicker, Modal, Popover, SelectPicker, Whisper } from 'rsuite';
 import DateRangePicker, { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
 
@@ -44,6 +44,9 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
     const [monthSchedules, setMonthSchedules] = useState<{ date: Date, schedules: Schedule[] }[]>([]);
     const [selectedMonthSchedules, setSelectedMonthSchedules] = useState<{ date: Date, schedules: Schedule[] } | null>(null);
     const [openModal, setOpenModal] = useState(false);
+    const [selectAddEmployee, setselectAddEmployee] = useState<SelectOption | null>(null);
+    const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+    const [openScheduleModal, setOpenScheduleModal] = useState(false);
 
     const nav = useNavigate()
 
@@ -107,7 +110,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 let weeklySchedules = [...schedules.filter(e => e.schedule_type == "WEEKLY")]
                 let singleSchedules = [...schedules.filter(e => e.schedule_type == "SINGLE_DATE")]
                 let dateRangeSchedules = [...schedules.filter(e => e.schedule_type == "DATERANGE")]
-                console.log("weeklySchedules", weeklySchedules)
+                // console.log("weeklySchedules", weeklySchedules)
                 let now = moment(dateRange[0])
                 let firstDay = now.clone().startOf('month').date()
                 let endDay = now.clone().endOf('month').date()
@@ -117,10 +120,10 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                     let selectedSchedules: Schedule[] = []
                     let day = now.clone().startOf('month').add(index - 1, 'day')
                     let weekDay = day.format("dddd").toLowerCase()
-                    console.log(day.toISOString())
+
                     selectedSchedules = [
                         ...selectedSchedules,
-                        ...weeklySchedules.filter(e => e.week_day.toLowerCase() == weekDay.toLowerCase()),
+                        // ...weeklySchedules.filter(e => e.week_day.toLowerCase() == weekDay.toLowerCase()),
                         ...singleSchedules.filter(e => e.start_date == day.format("YYYY-MM-DD")),
                     ]
 
@@ -131,23 +134,56 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
 
                 }
+                weeklySchedules = [...weeklySchedules.map(e => {
+                    let week_days: string[] = []
+                    if (e.sunday) week_days.push("sunday")
+                    if (e.monday) week_days.push("monday")
+                    if (e.tuesday) week_days.push("tuesday")
+                    if (e.wednesday) week_days.push("wednesday")
+                    if (e.thursday) week_days.push("thursday")
+                    if (e.friday) week_days.push("friday")
+                    if (e.saturday) week_days.push("saturday")
+                    e.week_days = week_days
+                    return e
+                })]
+
+                // console.log(weeklySchedules)
                 for (let index = firstDay; index <= endDay; index++) {
                     let day = now.clone().startOf('month').add(index - 1, 'day')
                     let sel = dateRangeSchedules.filter(e => (e.start_date) == day.format("YYYY-MM-DD"))
-                    if (sel.length)
+                    if (sel.length) {
                         for (const s of sel) {
                             for (let index = moment(s.start_date).date(); index <= moment(s.end_date).date(); index++) {
                                 let selDate = new Date(moment(s.start_date).year(), moment(s.start_date).month(), index)
                                 days = days.map(e => {
                                     if (moment(e.date).format("YYYY-MM-DD") == moment(selDate).format("YYYY-MM-DD")) {
-                                        console.log(moment(e.date).format("YYYY-MM-DD"))
+                                        // console.log(moment(e.date).format("YYYY-MM-DD"))
                                         e.schedules.push(s)
                                     }
                                     return e
                                 })
                             }
                         }
+                    }
+
+
+
                 }
+
+                
+                days = days.map(e => {
+                    let selWeekDay = weeklySchedules.filter(w => w.week_days.includes(moment(e.date).format("dddd").toLowerCase()))
+                    for (const s of selWeekDay) {
+                        if (s.week_days.includes(moment(e.date).format("dddd").toLowerCase())) {
+                            e.schedules.push(s)
+
+                        }
+                    }
+
+
+                    return e
+                })
+
 
                 setMonthSchedules(days)
             })
@@ -155,7 +191,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
 
     const renderCell = (date: Date) => {
-        let selected = monthSchedules.find(e => e.date.getDate() == date.getDate())
+        let selected = monthSchedules.find(e => moment(e.date).format("YYYY-MM-DD") == moment(date).format("YYYY-MM-DD"))
         if (selected) {
             let employees: Employee[] = []
             for (const iterator of selected.schedules.map(e => e.employees)) {
@@ -168,7 +204,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 <AvatarGroup stack className='mt-4'>
                     {employees
                         .filter((item, i) => i < 3)
-                        .map(item => (<Avatar onClick={() => { }} size={'xs'} bordered circle key={item.id} src={item.picture_url} alt={item.full_name} />))}
+                        .map(item => (<Avatar onClick={() => { }} size={'xs'} bordered circle key={item.id} src={item.picture_url} alt={initials(item.full_name)} />))}
                     {employees.length - 3 > 0 &&
                         <Avatar size={'xs'} bordered circle style={{ background: '#ccc' }}>
                             +{employees.length - 3}
@@ -188,18 +224,22 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 schedule_type: selectedType.value
             }
             if (selectedType.value == "WEEKLY") {
-                for (const d of selectedDaysWeek) {
-                    dataReq = {
-                        ...dataReq,
-                        name: d.label,
-                        week_day: d.value,
-                        start_time: moment(startTime).format("HH:mm:ss"),
-                        end_time: moment(endTime).format("HH:mm:ss"),
-                        employee_ids: selectedEmployee?.map(e => e.value),
-                    }
-
-                    await addSchedule(dataReq)
+                dataReq = {
+                    ...dataReq,
+                    name: selectedDaysWeek.map(e => e.value).join(", "),
+                    sunday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("sunday"),
+                    monday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("monday"),
+                    tuesday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("tuesday"),
+                    wednesday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("wednesday"),
+                    thursday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("thursday"),
+                    friday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("friday"),
+                    saturday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("saturday"),
+                    start_time: moment(startTime).format("HH:mm:ss"),
+                    end_time: moment(endTime).format("HH:mm:ss"),
+                    employee_ids: selectedEmployee?.map(e => e.value),
                 }
+
+                await addSchedule(dataReq)
             }
             if (selectedType.value == "DATERANGE") {
                 dataReq = {
@@ -225,10 +265,10 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 await addSchedule(dataReq)
             }
 
-            getAllSchedules()
             setStartTime(null)
             setEndTime(null)
             setselectedEmployee([])
+            getAllSchedules()
             getMappingSchedules()
         } catch (error) {
 
@@ -267,15 +307,39 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                 { data: ((page - 1) * limit) + (schedules.indexOf(e) + 1) },
                                 {
                                     data: <div className='flex justify-between'>
-                                        <span>
-                                            {e.name}
+                                        <input id={`name-${e.id}`} className='w-full mr-4' type="text" value={e.name} onChange={(v) => {
+                                            let sel = schedules.map(s => {
+                                                if (s.id == e.id) {
+                                                    s.name = v.target.value
+                                                }
+                                                return s
+                                            })
+                                            setSchedules(sel)
+                                        }} onBlur={(v) => {
+                                            let sel = schedules.find(s => s.id == e.id)
 
-                                        </span>
+                                            editSchedule(e.id, {
+                                                name: sel!.name,
+                                                schedule_type: sel!.schedule_type,
+                                            })
+                                        }} onKeyUp={(val) => {
+                                            if (val.key == "Enter") {
+                                                let sel = schedules.find(s => s.id == e.id)
+                                                editSchedule(e.id, {
+                                                    name: sel!.name,
+                                                    schedule_type: sel!.schedule_type,
+                                                }).then((v) => {
+                                                    document.getElementById(`name-${e.id}`)!.blur();
+                                                })
+
+                                            }
+                                        }} />
+
                                         <AvatarGroup stack>
                                             {e.employees
                                                 .filter((item, i) => i < 3)
                                                 .map(item => (
-                                                    <Avatar onClick={() => { }} size={'sm'} bordered circle key={item.id} src={item.picture_url} alt={item.full_name} />
+                                                    <Avatar onClick={() => { }} size={'sm'} bordered circle key={item.id} src={item.picture_url} alt={initials(item.full_name)} />
                                                 ))}
                                             {e.employees.length - 3 > 0 &&
                                                 <Avatar size={'sm'} bordered circle style={{ background: '#111' }}>
@@ -289,14 +353,15 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                 {
                                     data: <div className='flex cursor-pointer'>
                                         <EyeIcon onClick={() => {
-
+                                            setSelectedSchedule(e)
+                                            setOpenScheduleModal(true)
                                         }} className='w-5 text-blue-400  hover:text-blue-800 cursor-pointer' />
                                         <TrashIcon
                                             className=" h-5 w-5 text-red-400 hover:text-red-600"
                                             aria-hidden="true"
                                             onClick={() => {
                                                 confirmDelete(() => {
-                                                    deletetSchedule(e.id).then(v => getAllSchedules())
+                                                    deleteSchedule(e.id).then(v => getAllSchedules())
                                                 })
                                             }}
                                         />
@@ -363,24 +428,25 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 </div>
             </div>
         </div>
-        <Modal size={"lg"} open={openModal} onClose={() => {
+        <Modal className='custom-modal' size={"lg"} open={openModal} onClose={() => {
             setSelectedMonthSchedules(null)
             setOpenModal(false)
         }}>
             <Modal.Header>
                 <Modal.Title>{`${moment(selectedMonthSchedules?.date).format('DD MMMM YYYY')}`}</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className='h-full' >
                 <ul>
-                    {(selectedMonthSchedules?.schedules ?? []).map(e => (<li className='mb-8' key={randomStr(3)} >
+                    {(selectedMonthSchedules?.schedules ?? []).map(e => (<li className='mb-8' key={e.id} >
                         <h3 className='font-bold text-lg text-black mb-2'>{e.name}</h3>
-                        <div className='flex mb-2'>
-                            {e.employees.map(em => (<div className='py-2 pl-2 pr-4 rounded-full border flex items-center hover:bg-gray-50 mr-2 cursor-pointer' key={em.id} onClick={() => {
+                        <div className='flex mb-2 flex-wrap'>
+                            {e.employees.map(em => (<div className='py-2 pl-2 pr-4 rounded-full border flex items-center hover:bg-gray-50 mr-2 cursor-pointer mb-2' key={em.id} onClick={() => {
                                 nav(`/employee/${em.id}`)
                             }}>
-                                <Avatar onClick={() => { }} size={'sm'} bordered circle key={em.id} src={em.picture_url} alt={em.full_name} />
+                                <Avatar onClick={() => { }} size={'sm'} bordered circle key={em.id} src={em.picture_url} alt={initials(em.full_name)} />
                                 <p className='ml-4'>{em.full_name}</p>
                             </div>))}
+
                         </div>
                     </li>))}
 
@@ -388,6 +454,54 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
             </Modal.Body>
 
         </Modal>
+
+        <Modal className='custom-modal' size={"lg"} open={openScheduleModal} onClose={() => {
+            setSelectedSchedule(null)
+            setOpenScheduleModal(false)
+        }}>
+            <Modal.Header>
+                <Modal.Title>{`${selectedSchedule?.name}`}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className='h-full' >
+
+                <div className='flex mb-2 flex-wrap'>
+                    {(selectedSchedule?.employees ?? []).map(em => (<div className='py-2 pl-2 pr-4 rounded-full border flex items-center hover:bg-gray-50 mr-2 cursor-pointer mb-2' key={em.id}>
+                        <Avatar onClick={() => {
+                            nav(`/employee/${em.id}`)
+                        }} size={'sm'} bordered circle key={em.id} src={em.picture_url} alt={initials(em.full_name)} />
+                        <p className='ml-4 mr-2'>{em.full_name}</p>
+                        <XMarkIcon className='w-4 text-red-500' onClick={() => {
+                            deleteEmployeeSchedule(selectedSchedule!.id, em.id)
+                                .then(v => {
+                                    getAllSchedules()
+                                    getMappingSchedules()
+                                    getScheduleDetail(selectedSchedule!.id)
+                                        .then(v => v.json())
+                                        .then(v => setSelectedSchedule(v.data))
+                                })
+                        }} />
+                    </div>))}
+
+                    <SelectPicker className='mt-2' onSearch={(val) => {
+                        getAllEmployees(val)
+                    }} onSelect={(val, d, t) => {
+                        console.log(val)
+                        addEmployeeSchedule(selectedSchedule!.id, val)
+                            .then(v => {
+                                getAllSchedules()
+                                getMappingSchedules()
+                                getScheduleDetail(selectedSchedule!.id)
+                                    .then(v => v.json())
+                                    .then(v => setSelectedSchedule(v.data))
+                            })
+                    }} data={employees.map(emp => ({ value: emp.id, label: emp.full_name }))} appearance="default" placeholder="Tambah Pegawai" style={{ width: 224 }} />
+
+                </div>
+
+            </Modal.Body>
+
+        </Modal>
+
     </DashboardLayout>);
 }
 export default SchedulePage;

@@ -40,19 +40,37 @@ export const getAttendances = async  (pagination: PaginationReq, filter?: Attend
 
 
 export const addAttendance = async (req: AttendanceReq) => {
-    return await customFetch(`admin/attandance`, {
+    return await customFetch(`admin/attendance`, {
         method: "POST",
         body: JSON.stringify(req)
     })
 }
 
 export const editAttendance = async (id:string, req: AttendanceReq) => {
-    return await customFetch(`admin/attandance/${id}`, {
+    return await customFetch(`admin/attendance/${id}`, {
         method: "PUT",
         body: JSON.stringify(req)
     })
 }
 
 export const getAttendanceDetail = async (id: string) => {
-    return await customFetch(`admin/attandance/${id}`)
+    return await customFetch(`admin/attendance/${id}`)
+}
+
+export const getAttendanceImportDetail = async (id: string) => {
+    return await customFetch(`admin/attendance/import/${id}`)
+}
+
+export const getAttendanceImportReject = async (id: string, notes: string) => {
+    return await customFetch(`admin/attendance/import/${id}/Reject`, {
+        method: "PUT",
+        body: JSON.stringify({notes})
+    })
+}
+
+export const getAttendanceImportApprove = async (id: string, notes: string) => {
+    return await customFetch(`admin/attendance/import/${id}/Approve`, {
+        method: "PUT",
+        body: JSON.stringify({notes})
+    })
 }

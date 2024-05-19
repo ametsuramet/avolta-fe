@@ -1,5 +1,6 @@
 import { NullString, NullTime } from "@/objects/null_object"
 import { DateRange } from "rsuite/esm/DateRangePicker"
+import { Schedule } from "./schedule"
 
 export interface Employee {
   id: string
@@ -18,6 +19,7 @@ export interface Employee {
   cover: string
   date_of_birth?: string
   employee_identity_number: string
+  employee_code: string
   full_name: string
   basic_salary: number
   positional_allowance: number
@@ -28,6 +30,7 @@ export interface Employee {
   gender: string
   organization_name: string
   started_work?: string
+  schedules:  Schedule[]
 }
 
 export interface EmployeeFilter  {
@@ -49,6 +52,7 @@ export interface EmployeeReq {
   address: string
   date_of_birth?: NullTime
   employee_identity_number: string
+  employee_code?: string
   basic_salary: number
   positional_allowance: number
   transport_allowance: number

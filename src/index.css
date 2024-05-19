@@ -10,7 +10,8 @@ body {
     background-color: #F6F7F9;
 }
 
-.apexcharts-text, .apexcharts-legend-text {
+.apexcharts-text,
+.apexcharts-legend-text {
     font-family: "Nunito", sans-serif !important;
 }
 
@@ -51,10 +52,11 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-  }
-  
+}
 
-  .rs-picker-has-value .rs-btn .rs-picker-toggle-value, .rs-picker-has-value .rs-picker-toggle .rs-picker-toggle-value {
+
+.rs-picker-has-value .rs-btn .rs-picker-toggle-value,
+.rs-picker-has-value .rs-picker-toggle .rs-picker-toggle-value {
     color: #575757;
 }
 
@@ -68,4 +70,48 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.custom-modal .rs-modal-content {
+    height: calc(100vh - 200px);
+}
+
+
+.input-flat .rs-btn{
+    border-width: 0;
+
+}
+
+.input-flat .rs-input-group {
+    border-width: 0;
+
+}
+
+
+.input-flat .rs-input-group:focus-within {
+    outline: none;
+}
+
+.input-flat .rs-input-group input {
+    padding: 0;
+    font-size: 14pt;
+    color: black;
+    border-radius: 0;
+}
+
+.input-flat .rs-input-group input:disabled {
+    background-color: white !important;
+    color: black;
+}
+
+.input-flat .rs-input-group input::selection {
+    background: white;
+}
+
+.input-flat .rs-btn-close {
+    display: none;
+}
+
+.rs-avatar span {
+    @apply text-xs
 }

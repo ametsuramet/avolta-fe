@@ -8,7 +8,7 @@ import { Pagination } from '@/objects/pagination';
 import { addEmployee, getEmployees } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { TOKEN } from '@/utils/constant';
-import { asyncLocalStorage, getFullName, setNullString, setNullTime } from '@/utils/helper';
+import { asyncLocalStorage, getFullName, initials, setNullString, setNullTime } from '@/utils/helper';
 import { MagnifyingGlassIcon } from '@heroicons/react/16/solid';
 import { EyeIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
@@ -156,7 +156,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                                 {
                                     data: <div className='flex items-center'>
                                         <Avatar circle size='sm' bordered src={e.picture_url}
-                                            alt={e.full_name} />
+                                            alt={initials(e.full_name)} />
                                         <span className='ml-4'>
                                             {e.full_name}
                                         </span>

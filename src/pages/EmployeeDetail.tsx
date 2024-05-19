@@ -10,13 +10,18 @@ import { getAttendances } from '@/repositories/attendance';
 import { editEmployee, getEmployeeDetail } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
-import { asyncLocalStorage, getFullName, getStoragePermissions, setNullString, setNullTime } from '@/utils/helper';
+import { asyncLocalStorage, countOverTime, getDays, getFullName, getStoragePermissions, initials, money, setNullString, setNullTime } from '@/utils/helper';
 import { successToast } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import AvatarIcon from '@rsuite/icons/legacy/Avatar';
+import saveAs from 'file-saver';
 import moment from 'moment';
+
+
 import { useContext, useEffect, useState, type FC } from 'react';
+import CurrencyInput from 'react-currency-input-field';
 import { BsFloppy2 } from 'react-icons/bs';
+import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useParams } from 'react-router-dom';
 import { Avatar, Button, DatePicker, DateRangePicker, Message, Panel, SelectPicker, Uploader, toaster } from 'rsuite';
@@ -39,8 +44,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
-    const [dateRange, setDateRange] = useState<DateRange | null>(null);
-
+    const [dateRange, setDateRange] = useState<DateRange | null>([moment().subtract(1, 'months').toDate(), moment().toDate()]);
     const getAllJobTitles = async (s: string) => {
         asyncLocalStorage.getItem(TOKEN)
             .then(v => setToken(v))
@@ -67,7 +71,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
 
     useEffect(() => {
         getEmployeAttendances()
-    }, [page,limit, dateRange]);
+    }, [page, limit, dateRange]);
 
     const getDetail = async () => {
         try {
@@ -109,6 +113,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 job_title_id: setNullString(employee?.job_title_id),
                 address: employee?.address ?? "",
                 employee_identity_number: employee?.employee_identity_number ?? "",
+                employee_code: employee?.employee_code ?? "",
                 basic_salary: employee?.basic_salary ?? 0,
                 positional_allowance: employee?.positional_allowance ?? 0,
                 transport_allowance: employee?.transport_allowance ?? 0,
@@ -227,6 +232,20 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 }}
                             />
                         </InlineForm>
+                        <InlineForm title={'Kode Karyawan'} hints="Gunakan kode ini untuk mapping ke mesin biometrik/fingerprint">
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder={"Kode Karyawan"}
+                                value={employee?.employee_code ?? ""}
+                                onChange={(el) => {
+                                    setEmployee({
+                                        ...employee!,
+                                        employee_code: el.target.value
+                                    })
+                                }}
+                            />
+                        </InlineForm>
                         <InlineForm title={'Jabatan'}>
                             <SelectPicker placeholder="Jabatan" searchable={false} data={jobTitles.map(e => ({ value: e.id, label: e.name }))} value={employee?.job_title_id} onSelect={(val) => {
                                 setEmployee({
@@ -293,36 +312,74 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 }} />
                             </InlineForm>
                             <InlineForm title="Gaji Pokok" >
-                                <input disabled={!editable} className='form-control' value={employee?.basic_salary ?? ""} onChange={(el) => {
-                                    setEmployee({
-                                        ...employee!,
-                                        basic_salary: parseFloat(el.target.value)
-                                    })
-                                }} />
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.basic_salary}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                basic_salary: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.basic_salary)}</div>}
                             </InlineForm>
                             <InlineForm title="Tunjangan Jabatan" >
-                                <input disabled={!editable} className='form-control' value={employee?.positional_allowance ?? ""} onChange={(el) => {
-                                    setEmployee({
-                                        ...employee!,
-                                        positional_allowance: parseFloat(el.target.value)
-                                    })
-                                }} />
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.positional_allowance}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                positional_allowance: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.positional_allowance)}</div>}
+
                             </InlineForm>
                             <InlineForm title="Uang Transport" >
-                                <input disabled={!editable} className='form-control' value={employee?.transport_allowance ?? ""} onChange={(el) => {
-                                    setEmployee({
-                                        ...employee!,
-                                        transport_allowance: parseFloat(el.target.value)
-                                    })
-                                }} />
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.transport_allowance}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                transport_allowance: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.transport_allowance)}</div>}
+
                             </InlineForm>
                             <InlineForm title="Uang Makan" >
-                                <input disabled={!editable} className='form-control' value={employee?.meal_allowance ?? ""} onChange={(el) => {
-                                    setEmployee({
-                                        ...employee!,
-                                        meal_allowance: parseFloat(el.target.value)
-                                    })
-                                }} />
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.meal_allowance}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                meal_allowance: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.meal_allowance)}</div>}
                             </InlineForm>
                             <InlineForm title="Kode PTKP">
                                 <SelectPicker placeholder="Kode PTKP" searchable={false} data={NON_TAXABLE_CODES} value={employee?.non_taxable_income_level_code} onSelect={(val) => {
@@ -343,44 +400,95 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
             }
 
         </div>
-        <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
-            <div className='flex justify-between'>
-                <h3 className='font-bold mb-4 text-black text-lg'>{"Absensi"}</h3>
-                <div className='w-60'>
-                <DateRangePicker className='w-full' value={dateRange} onChange={(val) => setDateRange(val)} placement="bottomEnd" format='dd/MM/yyyy' />
+        <div className='grid grid-cols-4 gap-4  '>
+            <div className=' bg-white rounded-xl p-6 hover:shadow-lg col-span-3'>
+                <div className='flex justify-between mb-2'>
+                    <h3 className='font-bold mb-4 text-black text-lg'>{"Absensi"}</h3>
+                    <div className=' flex items-center'>
+                        <DateRangePicker className='w-60 mr-4' value={dateRange} onChange={(val) => setDateRange(val)} placement="bottomEnd" format='dd/MM/yyyy' />
+                        <Button onClick={async () => {
 
+                            try {
+                                setIsLoading(true)
+                                var resp = await getAttendances({ page, limit }, {
+                                    dateRange: dateRange,
+                                    employeeIDs: employeeId,
+                                    
+                                    download: true
+                                })
+                                let filename = resp.headers.get("Content-Description")
+                                var respBlob = await resp.blob()
+
+                                saveAs(respBlob, filename ?? "download.xlsx")
+                                
+                            } catch (error) {
+                                Swal.fire(`Perhatian`, `${error}`, 'error')
+                            } finally {
+                                setIsLoading(false)
+
+                            }
+
+
+                        }} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 '><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Laporan</Button>
+                    </div>
                 </div>
-            </div>
-            <CustomTable className=''
+                <CustomTable className=''
                     pagination
                     total={pagination?.total_records}
                     limit={limit}
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Nama Karyawan", "Jabatan", "Jam Masuk", "Jam Keluar"]} headerClasses={[]} datasets={attendances.map(e => ({
-                        cells: [{ data: attendances.indexOf(e) + 1 }, {
-                            data: <div className=' items-center flex' >
-                                <Avatar circle size='sm' bordered src={e.employee_picture}
-                                    alt={e.employee_name} />
-                                <span className='ml-4  hover:font-bold cursor-pointer' onClick={() => { }}>
-                                    {e.employee_name}
-                                </span>
-                            </div>
-                        }, { data: e.employee_job_title }, {
+                    headers={["No", "Tgl", "Jam Masuk", "Jam Keluar", "Durasi", "Overtime"]} headerClasses={[]} datasets={attendances.map(e => ({
+                        cells: [{ data: attendances.indexOf(e) + 1 },
+                        { data: <Moment format='DD MMM YYYY'>{e.clock_in}</Moment> }, {
                             data: <div className='flex flex-col'>
-                                <Moment format='DD MMM YYYY'>{e.clock_in}</Moment>
-                                <small><Moment format='HH:mm'>{e.clock_in}</Moment></small>
+
+                                <Moment format='HH:mm'>{e.clock_in}</Moment>
                             </div>
                         }, {
                             data: <div className='flex flex-col'>
-                                <Moment format='DD MMM YYYY'>{e.clock_out}</Moment>
-                                <small><Moment format='HH:mm'>{e.clock_out}</Moment></small>
+
+                                <Moment format='HH:mm'>{e.clock_out}</Moment>
                             </div>
-                        }], className: "hover:bg-gray-50 border-b last:border-b-0"
+                        },
+                        {
+                            data: <div>
+                                {moment(e.clock_out).diff(moment(e.clock_in), 'hours')} Jam, {(moment(e.clock_out).diff(moment(e.clock_in), 'minutes') % 60) ? `${moment(e.clock_out).diff(moment(e.clock_in), 'minutes') % 60} menit` : ''}
+                            </div>
+                        },
+                        {
+                            data: e.overtime &&
+                                <div>
+                                    {`${countOverTime(e)}`}
+                                </div>
+                        },
+                        ], className: "hover:bg-gray-50 border-b last:border-b-0"
                     }))} />
+            </div>
+            <div className=' bg-white rounded-xl p-6 hover:shadow-lg col-span-1'>
+                <div className='flex justify-between'>
+                    <h3 className='font-bold mb-4 text-black text-lg'>{"Jadwal Kerja"}</h3>
+
+                </div>
+                <ul>
+                    {(employee?.schedules ?? []).map(e => <li className='p-2 border-b hover:bg-gray-50 last:border-b-0' key={e.id}>
+                        <h3 className=' font-bold text-sm'>{e.name}</h3>
+                        <p>
+                            {e.schedule_type == "WEEKLY" && getDays(e)}
+                            {e.schedule_type == "SINGLE_DATE" && moment(e.start_date).format("DD MMM YYYY")}
+                            {e.schedule_type == "DATERANGE" && `${moment(e.start_date).format("DD MMM YYYY")} ~ ${moment(e.end_date).format("DD MMM YYYY")}`}
+                        </p>
+                        <p>
+                            {e.start_time} ~ {e.end_time}
+                        </p>
+
+                    </li>)}
+                </ul>
+            </div>
         </div>
 
     </DashboardLayout>);
 }
 export default EmployeeDetail;
+
