@@ -33,7 +33,7 @@ export const editJobTitle = async (id:string, req: JobTitleReq) => {
     })
 }
 
-export const deletetJobTitle = async (id:string) => {
+export const deleteJobTitle = async (id:string) => {
     return await customFetch(`admin/jobTitle/${id}`, {
         method: "DELETE",
     })

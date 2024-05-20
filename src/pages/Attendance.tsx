@@ -213,7 +213,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 <Drawer.Body className='p-8'>
                     <h3 className=' text-2xl text-black'>Filter</h3>
                     <InlineForm title="Karyawan">
-                        <Select< SelectOption, true> isMulti styles={multiColourStyles}
+                        <Select< SelectOption, true> isMulti styles={multiColourStyles} placeholder="Pilih Karyawan"
                             options={employees.map(e => ({ value: e.id, label: e.full_name }))}
                             value={selectedEmployee!}
                             onChange={(option: MultiValue<SelectOption>): void => {

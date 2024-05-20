@@ -74,6 +74,13 @@ body {
 
 .custom-modal .rs-modal-content {
     height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+}
+.custom-modal .rs-modal-body {
+    /* height: calc(100vh - 400px); */
+    max-height: initial;
+    flex: 1 1 0%;
 }
 
 

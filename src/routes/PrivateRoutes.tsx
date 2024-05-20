@@ -8,6 +8,11 @@ import AttendancePage from "@/pages/Attendance"
 import SchedulePage from "@/pages/Schedule"
 import JobTitlePage from "@/pages/JobTitle"
 import AttendanceImportDetail from "@/pages/AttendanceImportDetail"
+import OrganizationPage from "@/pages/Organization"
+import LeaveCategoryPage from "@/pages/LeaveCategory"
+import RolePage from "@/pages/Role"
+import UserPage from "@/pages/User"
+import LeavePage from "@/pages/Leave"
 
 
 interface PrivateRoutesProps { }
@@ -23,6 +28,11 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/schedule' element={<SchedulePage />} />
             <Route path='/job_title' element={<JobTitlePage />} />
             <Route path='/attendance/import/:importId' element={<AttendanceImportDetail />} />
+            <Route path='/organization' element={<OrganizationPage />} />
+            <Route path='/leave_category' element={<LeaveCategoryPage />} />
+            <Route path='/leave' element={<LeavePage />} />
+            <Route path='/role' element={<RolePage />} />
+            <Route path='/user' element={<UserPage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     )

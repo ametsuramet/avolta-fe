@@ -48,7 +48,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const getAllJobTitles = async (s: string) => {
         asyncLocalStorage.getItem(TOKEN)
             .then(v => setToken(v))
-        getJobTitles({ page: 1, limit: 5, search: s })
+        getJobTitles({ page: 1, limit: 100, search: s })
             .then(v => v.json())
             .then(v => setJobTitles(v.data))
     }

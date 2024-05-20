@@ -23,7 +23,9 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children, noPadding, permis
 
     useEffect(() => {
         getStoragePermissions()
-            .then(v => setPermissions(v))
+            .then(v => {
+                setPermissions(v)
+            })
     }, []);
 
     return (<section className="content-wrapper flex h-screen w-full">

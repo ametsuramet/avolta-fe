@@ -208,3 +208,14 @@ export function countOverTime(item) {
     return `${hours ? hours + " Jam" : ''} ${minutes ? minutes + ' menit' : ""}`
 }
 
+export function groupedPermissions(permissions) {
+    return Object.groupBy(permissions, ({ group }) => group)
+}
+
+export const titleCase = (s) =>
+    s.replace(/^_*(.)|_+(.)/g, (s, c, d) => c ? c.toUpperCase() : ' ' + d.toUpperCase())
+
+
+export function get_url_extension(url) {
+    return url.split(/[#?]/)[0].split('.').pop().trim();
+}

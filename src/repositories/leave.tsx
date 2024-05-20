@@ -1,0 +1,56 @@
+import { LeaveReq } from "@/model/leave";
+import { PaginationReq } from "@/objects/pagination"
+import { customFetch } from "@/utils/helper"
+
+
+export const getLeaves = async (pagination: PaginationReq) => {
+    var params: Record<string, string> = {
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+
+    };
+    if (pagination.search && pagination.search != "") {
+        params["search"] = pagination.search
+    }
+    return await customFetch(`admin/leave?${new URLSearchParams(params)}`)
+
+}
+
+
+
+
+export const addLeave = async (req: LeaveReq) => {
+    return await customFetch(`admin/leave`, {
+        method: "POST",
+        body: JSON.stringify(req)
+    })
+}
+
+export const editLeave = async (id: string, req: LeaveReq) => {
+    return await customFetch(`admin/leave/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(req)
+    })
+}
+export const approveLeave = async (id: string, remarks: string) => {
+    return await customFetch(`admin/leave/${id}/Approve`, {
+        method: "PUT",
+        body: JSON.stringify({ remarks })
+    })
+}
+export const rejectLeave = async (id: string, remarks: string) => {
+    return await customFetch(`admin/leave/${id}/Reject`, {
+        method: "PUT",
+        body: JSON.stringify({ remarks })
+    })
+}
+
+export const deleteLeave = async (id: string) => {
+    return await customFetch(`admin/leave/${id}`, {
+        method: "DELETE",
+    })
+}
+
+export const getLeaveDetail = async (id: string) => {
+    return await customFetch(`admin/leave/${id}`)
+}

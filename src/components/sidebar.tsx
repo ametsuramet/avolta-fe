@@ -34,6 +34,9 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/schedule":
 			case "/job_title":
 			case "/organization":
+			case "/role":
+			case "/user":
+			case "/leave_category":
 				return "/company"
 		
 			default:
@@ -76,7 +79,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item onClick={() => nav('/attendance')} eventKey="/attendance" icon={<LuCalendarClock className='rs-icon' />}>
 						Absensi
 					</Nav.Item>
-					<Nav.Item eventKey="/leave" icon={<LuCalendarDays className='rs-icon' />}>
+					<Nav.Item onClick={() => nav('/leave')} eventKey="/leave" icon={<LuCalendarDays className='rs-icon' />}>
 						Cuti
 					</Nav.Item>
 					<Nav.Item eventKey="/payroll" icon={<LuWallet2 className='rs-icon' />}>
@@ -90,6 +93,9 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 						<Nav.Item onClick={() => nav('/schedule')}  eventKey="/schedule" >Jadwal</Nav.Item>
 						<Nav.Item onClick={() => nav('/job_title')}  eventKey="/job_title">Posisi / Jabatan</Nav.Item>
 						<Nav.Item onClick={() => nav('/organization')}  eventKey="/organization">Organisasi</Nav.Item>
+						<Nav.Item onClick={() => nav('/leave_category')}  eventKey="/leave_category">Kategori Cuti</Nav.Item>
+						<Nav.Item onClick={() => nav('/role')}  eventKey="/role">Hak Akses</Nav.Item>
+						<Nav.Item onClick={() => nav('/user')}  eventKey="/user">Pengguna</Nav.Item>
 					</Nav.Menu>
 					
 				</Nav>
