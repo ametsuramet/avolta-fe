@@ -30,6 +30,10 @@ export interface Employee {
   gender: string
   organization_name: string
   started_work?: string
+  user_id?: string | null
+  total_working_days: number
+  total_working_hours: number
+  daily_working_hours: number
   schedules:  Schedule[]
 }
 
@@ -40,6 +44,7 @@ export interface EmployeeFilter  {
   startedWork?: Date  | null
   startedWorkEnd?: Date  | null
   download?: boolean  | null
+  skipLinked?: boolean  | null
 }
 
 
@@ -61,5 +66,9 @@ export interface EmployeeReq {
   tax_payer_number: string
   gender: string
   started_work?: NullTime
+  user_id?: string | null,
+  total_working_days?: number
+  total_working_hours?: number
+  daily_working_hours?: number
 }
 

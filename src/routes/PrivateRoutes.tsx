@@ -13,6 +13,8 @@ import LeaveCategoryPage from "@/pages/LeaveCategory"
 import RolePage from "@/pages/Role"
 import UserPage from "@/pages/User"
 import LeavePage from "@/pages/Leave"
+import PayRollPage from "@/pages/PayRoll"
+import PayRollDetail from "@/pages/PayRollDetail"
 
 
 interface PrivateRoutesProps { }
@@ -30,6 +32,8 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/attendance/import/:importId' element={<AttendanceImportDetail />} />
             <Route path='/organization' element={<OrganizationPage />} />
             <Route path='/leave_category' element={<LeaveCategoryPage />} />
+            <Route path='/pay_roll' element={<PayRollPage />} />
+            <Route path='/pay_roll/:payRollId' element={<PayRollDetail />} />
             <Route path='/leave' element={<LeavePage />} />
             <Route path='/role' element={<RolePage />} />
             <Route path='/user' element={<UserPage />} />

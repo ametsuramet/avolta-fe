@@ -219,3 +219,28 @@ export const titleCase = (s) =>
 export function get_url_extension(url) {
     return url.split(/[#?]/)[0].split('.').pop().trim();
 }
+
+
+export function nl2br(str, is_xhtml) {
+    if (typeof str === 'undefined' || str === null) {
+        return '';
+    }
+    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+}
+
+export function numberToDuration(num) {
+    let hours = Math.floor(num / 60)
+    let minutes = num % 60
+    return (hours ? `${hours} Jam` : '') + ' ' + (minutes ? `${minutes} Menit` : '');
+}
+export function stringHourToNumber(hour) {
+    try {
+        let split = hour.split(":")
+        return (parseInt(split[0]) * 60) + parseInt(split[1])
+    } catch (error) {
+        return 0
+    }
+
+
+}

@@ -10,7 +10,7 @@ import { getAttendances } from '@/repositories/attendance';
 import { editEmployee, getEmployeeDetail } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
-import { asyncLocalStorage, countOverTime, getDays, getFullName, getStoragePermissions, initials, money, setNullString, setNullTime } from '@/utils/helper';
+import { asyncLocalStorage, countOverTime, getDays, getFullName, getStoragePermissions, initials, money, numberToDuration, setNullString, setNullTime } from '@/utils/helper';
 import { successToast } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import AvatarIcon from '@rsuite/icons/legacy/Avatar';
@@ -27,6 +27,11 @@ import { useParams } from 'react-router-dom';
 import { Avatar, Button, DatePicker, DateRangePicker, Message, Panel, SelectPicker, Uploader, toaster } from 'rsuite';
 import { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
+import Select, { SingleValue } from 'react-select';
+import { SelectOption } from '@/objects/select_option';
+import { colourStyles } from '@/utils/style';
+import { getUsers } from '@/repositories/user';
+import { User } from '@/model/user';
 
 interface EmployeeDetailProps { }
 
@@ -45,18 +50,39 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
     const [dateRange, setDateRange] = useState<DateRange | null>([moment().subtract(1, 'months').toDate(), moment().toDate()]);
+    const [userId, setUserId] = useState<SelectOption>({ value: "", label: "Pilih User" });
+    const [users, setUsers] = useState<User[]>([]);
+    const [totalWorkingDays, setTotalWorkingDays] = useState(0);
+    const [totalWorkingHours, setTotalWorkingHours] = useState(0);
+
+
+
     const getAllJobTitles = async (s: string) => {
         asyncLocalStorage.getItem(TOKEN)
             .then(v => setToken(v))
         getJobTitles({ page: 1, limit: 100, search: s })
             .then(v => v.json())
             .then(v => setJobTitles(v.data))
+
+        getUsers({ page: 1, limit: 5 })
+            .then(v => v.json())
+            .then(v => setUsers(v.data))
+
     }
 
     useEffect(() => {
         getStoragePermissions().then(v => setPermissions(v))
         setMounted(true)
     }, []);
+
+    useEffect(() => {
+        if (employee) {
+            setUserId({ value: employee?.user_id ?? "", label: employee?.username })
+            setTotalWorkingHours(employee.total_working_hours)
+            setTotalWorkingDays(employee.total_working_days)
+        }
+
+    }, [employee]);
 
     useEffect(() => {
         if (!mounted) return
@@ -124,6 +150,10 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 date_of_birth: setNullTime(employee?.date_of_birth ? employee?.date_of_birth : null),
                 started_work: setNullTime(employee?.started_work ? employee?.started_work : null),
                 picture: setNullString(employee?.picture),
+                user_id: userId?.value != "" ? userId?.value : null,
+                total_working_days: totalWorkingDays,
+                total_working_hours: totalWorkingHours,
+                daily_working_hours: employee?.daily_working_hours ?? 0,
             })
             getDetail()
             successToast("Data karyawan berhasil di update")
@@ -145,6 +175,23 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 <div className='grid grid-cols-2 gap-4'>
 
                     <Panel header="Data Karyawan" bordered>
+                        <InlineForm title={'Link Ke User'}>
+
+                            <Select< SelectOption, false> styles={colourStyles}
+                                options={[{ value: "", label: "Pilih User" }, ...users.map(e => ({ value: e.id, label: e.full_name }))]}
+                                value={userId}
+                                onChange={(option: SingleValue<SelectOption>): void => {
+                                    setUserId(option!)
+                                }}
+                                onInputChange={(val) => {
+                                    getUsers({ page: 1, limit: 5, search: val })
+                                        .then(v => v.json())
+                                        .then(v => {
+                                            setUsers(v.data)
+                                        })
+                                }}
+                            />
+                        </InlineForm>
                         <InlineForm title="Nama Depan" >
                             <input disabled={!editable} className='form-control' value={employee?.first_name ?? ""} onChange={(el) => {
                                 setEmployee({
@@ -254,6 +301,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 })
                             }} block />
                         </InlineForm>
+
 
 
                         <Button onClick={async () => {
@@ -389,6 +437,57 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                     })
                                 }} block />
                             </InlineForm>
+                            <InlineForm title="Total Hari Kerja">
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.total_working_days}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                total_working_days: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.total_working_days)}</div>}
+                            </InlineForm>
+                            <InlineForm title="Total Jam Kerja">
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.total_working_hours}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                total_working_hours: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.total_working_hours)}</div>}
+                            </InlineForm>
+                            <InlineForm title="Jam Kerja per hari">
+                                {editable ?
+                                    <CurrencyInput
+                                        className='form-control'
+                                        groupSeparator="."
+                                        decimalSeparator=","
+                                        value={employee?.daily_working_hours}
+                                        onValueChange={(value, _, values) => {
+                                            setEmployee({
+                                                ...employee!,
+                                                daily_working_hours: values?.float ?? 0
+                                            })
+                                        }}
+
+                                    />
+                                    : <div className='form-control'> {money(employee?.daily_working_hours)}</div>}
+                            </InlineForm>
 
                             <Button onClick={async () => {
                                 update()
@@ -413,14 +512,14 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 var resp = await getAttendances({ page, limit }, {
                                     dateRange: dateRange,
                                     employeeIDs: employeeId,
-                                    
+
                                     download: true
                                 })
                                 let filename = resp.headers.get("Content-Description")
                                 var respBlob = await resp.blob()
 
                                 saveAs(respBlob, filename ?? "download.xlsx")
-                                
+
                             } catch (error) {
                                 Swal.fire(`Perhatian`, `${error}`, 'error')
                             } finally {
@@ -448,14 +547,19 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                             </div>
                         }, {
                             data: <div className='flex flex-col'>
-
-                                <Moment format='HH:mm'>{e.clock_out}</Moment>
+                                {e.clock_out &&
+                                    <Moment format='HH:mm'>{e.clock_out}</Moment>
+                                }
                             </div>
                         },
                         {
-                            data: <div>
-                                {moment(e.clock_out).diff(moment(e.clock_in), 'hours')} Jam, {(moment(e.clock_out).diff(moment(e.clock_in), 'minutes') % 60) ? `${moment(e.clock_out).diff(moment(e.clock_in), 'minutes') % 60} menit` : ''}
+                            data: 
+                                e.clock_out &&
+                            <div>
+                                {numberToDuration(moment(e.clock_out).diff(moment(e.clock_in), 'minutes'))}
                             </div>
+
+                            
                         },
                         {
                             data: e.overtime &&

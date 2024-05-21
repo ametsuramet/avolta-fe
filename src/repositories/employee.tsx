@@ -32,6 +32,9 @@ export const getEmployees = async (pagination: PaginationReq, filter?: EmployeeF
         if (filter.download) {
             params["download"] = "1"
         }
+        if (filter.skipLinked) {
+            params["skip_linked"] = "1"
+        }
     }
     return await customFetch(`admin/employee?${new URLSearchParams(params)}`)
 

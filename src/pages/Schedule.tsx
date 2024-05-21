@@ -16,6 +16,7 @@ import moment from 'moment';
 import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFloppy2 } from 'react-icons/bs';
 import { FaClock } from 'react-icons/fa6';
+import { PiFloppyDiskFill } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import Select, { MultiValue, SingleValue } from 'react-select';
 import { Avatar, AvatarGroup, Badge, Button, Calendar, DatePicker, Modal, Popover, SelectPicker, Whisper } from 'rsuite';
@@ -170,11 +171,11 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
                 }
 
-                
+
                 days = days.map(e => {
-                    let selWeekDay = weeklySchedules.filter(w => w.week_days.includes(moment(e.date).format("dddd").toLowerCase()))
+                    let selWeekDay = weeklySchedules.filter(w => w.week_days.includes(moment(e.date).locale("en").format("dddd").toLowerCase()))
                     for (const s of selWeekDay) {
-                        if (s.week_days.includes(moment(e.date).format("dddd").toLowerCase())) {
+                        if (s.week_days.includes(moment(e.date).locale("en").format("dddd").toLowerCase())) {
                             e.schedules.push(s)
 
                         }
@@ -265,16 +266,21 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 await addSchedule(dataReq)
             }
 
-            setStartTime(null)
-            setEndTime(null)
-            setselectedEmployee([])
-            getAllSchedules()
-            getMappingSchedules()
+            clearForm()
         } catch (error) {
 
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const clearForm = () => {
+        setStartTime(null)
+        setEndTime(null)
+        setselectedEmployee([])
+        getAllSchedules()
+        setSelectedDaysWeek([])
+        getMappingSchedules()
     }
     return (<DashboardLayout permission='read_schedule'>
         <div className='col-span-3 bg-white rounded-xl p-6 hover:shadow-lg mb-4'>
@@ -354,6 +360,21 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                     data: <div className='flex cursor-pointer'>
                                         <EyeIcon onClick={() => {
                                             setSelectedSchedule(e)
+                                            setSelectedType({ value: e.schedule_type, label: scheduleType.find(s => s.value == e.schedule_type)!.label })
+                                            let daysWeekSelected: SelectOption[] = []
+                                            if (e.sunday) daysWeekSelected.push({ value: "SUNDAY", label: "Minggu" })
+                                            if (e.monday) daysWeekSelected.push({ value: "MONDAY", label: "Senin" })
+                                            if (e.tuesday) daysWeekSelected.push({ value: "TUESDAY", label: "Selasa" })
+                                            if (e.wednesday) daysWeekSelected.push({ value: "WEDNESDAY", label: "Rabu" })
+                                            if (e.thursday) daysWeekSelected.push({ value: "THURSDAY", label: "Kamis" })
+                                            if (e.friday) daysWeekSelected.push({ value: "FRIDAY", label: "Jumat" })
+                                            if (e.saturday) daysWeekSelected.push({ value: "SATURDAY", label: "Sabtu" })
+                                            setselectedEmployee(e.employees.map(em => ({ value: em.id, label: em.full_name })))
+                                            setSelectedDaysWeek(daysWeekSelected)
+                                            setSelectedDateRange([moment(e.start_date).toDate(), moment(e.end_date).toDate()])
+                                            setStartTime(moment(e.start_time, "HH:mm").toDate())
+                                            setEndTime(moment(e.end_time, "HH:mm").toDate())
+
                                             setOpenScheduleModal(true)
                                         }} className='w-5 text-blue-400  hover:text-blue-800 cursor-pointer' />
                                         <TrashIcon
@@ -436,6 +457,8 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                 <Modal.Title>{`${moment(selectedMonthSchedules?.date).format('DD MMMM YYYY')}`}</Modal.Title>
             </Modal.Header>
             <Modal.Body className='h-full' >
+
+
                 <ul>
                     {(selectedMonthSchedules?.schedules ?? []).map(e => (<li className='mb-8' key={e.id} >
                         <h3 className='font-bold text-lg text-black mb-2'>{e.name}</h3>
@@ -451,54 +474,145 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                     </li>))}
 
                 </ul>
+
+
+
             </Modal.Body>
 
         </Modal>
 
-        <Modal className='custom-modal' size={"lg"} open={openScheduleModal} onClose={() => {
+        <Modal className='custom-modal' size={"md"} open={openScheduleModal} onClose={() => {
             setSelectedSchedule(null)
             setOpenScheduleModal(false)
+            clearForm()
         }}>
             <Modal.Header>
                 <Modal.Title>{`${selectedSchedule?.name}`}</Modal.Title>
             </Modal.Header>
             <Modal.Body className='h-full' >
 
-                <div className='flex mb-2 flex-wrap'>
-                    {(selectedSchedule?.employees ?? []).map(em => (<div className='py-2 pl-2 pr-4 rounded-full border flex items-center hover:bg-gray-50 mr-2 cursor-pointer mb-2' key={em.id}>
-                        <Avatar onClick={() => {
-                            nav(`/employee/${em.id}`)
-                        }} size={'sm'} bordered circle key={em.id} src={em.picture_url} alt={initials(em.full_name)} />
-                        <p className='ml-4 mr-2'>{em.full_name}</p>
-                        <XMarkIcon className='w-4 text-red-500' onClick={() => {
-                            deleteEmployeeSchedule(selectedSchedule!.id, em.id)
-                                .then(v => {
-                                    getAllSchedules()
-                                    getMappingSchedules()
-                                    getScheduleDetail(selectedSchedule!.id)
-                                        .then(v => v.json())
-                                        .then(v => setSelectedSchedule(v.data))
-                                })
-                        }} />
-                    </div>))}
+                <InlineForm title="Tipe Jadwal">
+                    <Select< SelectOption, false> styles={colourStyles}
+                        options={scheduleType}
+                        value={selectedType!}
+                        onChange={(option: SingleValue<SelectOption>): void => {
+                            setSelectedType(option!)
+                        }}
+                    />
+                </InlineForm>
+                {selectedType.value == "WEEKLY" && <InlineForm title="Pilih Hari">
+                    <Select< SelectOption, true> isMulti styles={multiColourStyles}
+                        options={daysWeek}
+                        value={selectedDaysWeek}
+                        onChange={(option: MultiValue<SelectOption>): void => {
+                            setSelectedDaysWeek(option!)
+                        }}
+                    />
+                </InlineForm>}
+                {selectedType.value == "DATERANGE" && <InlineForm title="Rentang Tanggal">
+                    <DateRangePicker className='w-full' value={selectedDateRange} onChange={(val) => setSelectedDateRange(val!)} placement="bottomEnd" format='dd/MM/yyyy' />
+                </InlineForm>}
+                {selectedType.value == "SINGLE_DATE" && <InlineForm title="Tanggal">
+                    <DatePicker className='w-full' value={selectedDate} onChange={(val) => setSelectedDate(val!)} placement="bottomEnd" format='dd/MM/yyyy' />
+                </InlineForm>}
+                <InlineForm title="Pilih Karyawan">
+                    <Select< SelectOption, true> isMulti styles={multiColourStyles}
+                        options={employees.map(e => ({ value: e.id, label: e.full_name }))}
+                        value={selectedEmployee!}
+                        onChange={(option: MultiValue<SelectOption>): void => {
+                            setselectedEmployee(option!)
+                        }}
+                        onInputChange={(val) => {
+                            getAllEmployees(val)
+                        }}
 
-                    <SelectPicker className='mt-2' onSearch={(val) => {
-                        getAllEmployees(val)
-                    }} onSelect={(val, d, t) => {
-                        console.log(val)
-                        addEmployeeSchedule(selectedSchedule!.id, val)
-                            .then(v => {
-                                getAllSchedules()
-                                getMappingSchedules()
-                                getScheduleDetail(selectedSchedule!.id)
-                                    .then(v => v.json())
-                                    .then(v => setSelectedSchedule(v.data))
-                            })
-                    }} data={employees.map(emp => ({ value: emp.id, label: emp.full_name }))} appearance="default" placeholder="Tambah Pegawai" style={{ width: 224 }} />
+                    />
+                </InlineForm>
+                <InlineForm title="Jam Mulai">
+                    <DatePicker value={startTime} block format="HH:mm" caretAs={FaClock} placement="bottomEnd" onChange={(val) => {
+                        setStartTime(val)
+                    }} />
+                </InlineForm>
+                <InlineForm title="Jam Berakhir">
+                    <DatePicker value={endTime} block format="HH:mm" caretAs={FaClock} placement="bottomEnd" onChange={(val) => {
+                        setEndTime(val)
+                    }} />
+                </InlineForm>
 
-                </div>
+
+
+
 
             </Modal.Body>
+            <Modal.Footer>
+                <Button onClick={() => {
+                    setOpenScheduleModal(false)
+                }} appearance="subtle">
+                    Cancel
+                </Button>
+                <Button onClick={async () => {
+                    try {
+                        setIsLoading(true)
+                        let dataReq: ScheduleReq = {
+                            schedule_type: selectedType.value
+                        }
+                        if (selectedType.value == "WEEKLY") {
+                            dataReq = {
+                                ...dataReq,
+                                name: selectedDaysWeek.map(e => e.value).join(", "),
+                                sunday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("sunday"),
+                                monday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("monday"),
+                                tuesday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("tuesday"),
+                                wednesday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("wednesday"),
+                                thursday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("thursday"),
+                                friday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("friday"),
+                                saturday: selectedDaysWeek.map(e => e.value.toLowerCase()).includes("saturday"),
+                                start_time: moment(startTime).format("HH:mm:ss"),
+                                end_time: moment(endTime).format("HH:mm:ss"),
+                                employee_ids: selectedEmployee?.map(e => e.value),
+                            }
+
+                            await editSchedule(selectedSchedule!.id, dataReq)
+                        }
+                        if (selectedType.value == "DATERANGE") {
+                            dataReq = {
+                                ...dataReq,
+                                name: `Jadwal ${moment(selectedDateRange[0]).format("DD/MM/YYYY")} ~ ${moment(selectedDateRange[1]).format("DD/MM/YYYY")}`,
+                                start_date: moment(selectedDateRange[0]).toISOString(),
+                                end_date: moment(selectedDateRange[1]).toISOString(),
+                                employee_ids: selectedEmployee?.map(e => e.value),
+                                start_time: moment(startTime).format("HH:mm:ss"),
+                                end_time: moment(endTime).format("HH:mm:ss"),
+                            }
+                            await editSchedule(selectedSchedule!.id, dataReq)
+                        }
+                        if (selectedType.value == "SINGLE_DATE") {
+                            dataReq = {
+                                ...dataReq,
+                                name: `Jadwal ${moment(selectedDate).format("DD/MM/YYYY")}`,
+                                start_date: moment(selectedDate).toISOString(),
+                                employee_ids: selectedEmployee?.map(e => e.value),
+                                start_time: moment(startTime).format("HH:mm:ss"),
+                                end_time: moment(endTime).format("HH:mm:ss"),
+                            }
+                            await editSchedule(selectedSchedule!.id, dataReq)
+                        }
+
+                        setOpenScheduleModal(false)
+                        getAllSchedules()
+                        clearForm()
+
+                    } catch (error) {
+                        Swal.fire(`Perhatian`, `${error}`, 'error')
+                    } finally {
+                        setIsLoading(false)
+
+                    }
+                }} appearance="primary">
+                    <PiFloppyDiskFill className='mr-2' />
+                    Simpan
+                </Button>
+            </Modal.Footer>
 
         </Modal>
 

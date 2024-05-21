@@ -44,6 +44,12 @@ export const rejectLeave = async (id: string, remarks: string) => {
         body: JSON.stringify({ remarks })
     })
 }
+export const reviewLeave = async (id: string, remarks: string) => {
+    return await customFetch(`admin/leave/${id}/Review`, {
+        method: "PUT",
+        body: JSON.stringify({ remarks })
+    })
+}
 
 export const deleteLeave = async (id: string) => {
     return await customFetch(`admin/leave/${id}`, {

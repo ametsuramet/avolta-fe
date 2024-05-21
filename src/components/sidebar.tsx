@@ -82,7 +82,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item onClick={() => nav('/leave')} eventKey="/leave" icon={<LuCalendarDays className='rs-icon' />}>
 						Cuti
 					</Nav.Item>
-					<Nav.Item eventKey="/payroll" icon={<LuWallet2 className='rs-icon' />}>
+					<Nav.Item onClick={() => nav('/pay_roll')} eventKey="/pay_roll" icon={<LuWallet2 className='rs-icon' />}>
 						Payroll
 					</Nav.Item>
 				

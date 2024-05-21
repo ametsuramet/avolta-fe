@@ -8,10 +8,10 @@ import { LoadingContext } from '@/objects/loading_context';
 import { Pagination } from '@/objects/pagination';
 import { SelectOption } from '@/objects/select_option';
 import { getEmployeeDetail, getEmployees } from '@/repositories/employee';
-import { addLeave, approveLeave, deleteLeave, editLeave, getLeaves, rejectLeave } from '@/repositories/leave';
+import { addLeave, approveLeave, deleteLeave, editLeave, getLeaves, rejectLeave, reviewLeave } from '@/repositories/leave';
 import { getLeaveCategories } from '@/repositories/leave_category';
 import { TOKEN } from '@/utils/constant';
-import { asyncLocalStorage, confirmDelete, initials, titleCase } from '@/utils/helper';
+import { asyncLocalStorage, confirmDelete, initials, nl2br, titleCase } from '@/utils/helper';
 import { colourStyles } from '@/utils/style';
 import { CheckIcon, EyeIcon, PaperClipIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { url } from 'inspector';
@@ -28,6 +28,9 @@ import Swal from 'sweetalert2';
 import Moment from 'react-moment';
 import moment from 'moment';
 import 'moment/locale/id';
+import { BiBulb } from 'react-icons/bi';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw'
 
 
 
@@ -105,11 +108,21 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
         try {
             setIsLoading(true)
             confirmDelete(async () => {
-                if (appr == "approve") {
-                    await approveLeave(selectedLeave?.id!, remarks)
-                } else {
-                    await rejectLeave(selectedLeave?.id!, remarks)
+                switch (appr) {
+                    case "approve":
+                        await approveLeave(selectedLeave?.id!, remarks)
+
+                        break;
+                    case "reject":
+                        await rejectLeave(selectedLeave?.id!, remarks)
+
+                        break;
+
+                    default:
+                        await reviewLeave(selectedLeave?.id!, remarks)
+                        break;
                 }
+
 
                 setSelectedLeave(null)
                 setModalApproval(false)
@@ -176,7 +189,7 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
         <div className='grid grid-cols-3 gap-4'>
             <div className='col-span-3 bg-white rounded-xl p-6 hover:shadow-lg'>
                 <div className='flex justify-between'>
-                    <h3 className='font-bold mb-4 text-black text-lg'>{"Cuti"}</h3>
+                    <h3 className='font-bold mb-4 text-black text-lg'>{"Cuti / Izin"}</h3>
                     <div>
 
                         <Button onClick={() => setOpen(true)} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-2'><IoAddCircleOutline className='text-blue-600 mr-2' /> Tambah</Button>
@@ -231,9 +244,9 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
 
                                         </div>
                                         {e.remarks &&
-                                            <div className='flex mt-4'>
-                                                <FaRegNoteSticky className='mr-2 w-4 cursor-pointer' />
-                                                {e.remarks}
+                                            <div className='flex mt-4 flex-col'>
+                                                <small className='font-bold'>Catatan:</small>
+                                                <ReactMarkdown rehypePlugins={[rehypeRaw]} children={e.remarks} />
                                             </div>
                                         }
                                     </div>
@@ -274,8 +287,8 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
             </div>
             {/* <div className='col-span-1'>
                 <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
-                    <h3 className='font-bold mb-4 text-black text-lg'>{selectedLeave ? "Edit Cuti" : "Tambah Cuti"}</h3>
-                    <InlineForm title="Cuti">
+                    <h3 className='font-bold mb-4 text-black text-lg'>{selectedLeave ? "Edit Cuti / Izin" : "Tambah Cuti / Izin"}</h3>
+                    <InlineForm title="Cuti / Izin">
                         <input placeholder='ex: Manager Produksi' value={name} onChange={(el) => setName(el.target.value)} type="text" className="form-control" />
                     </InlineForm>
                     <InlineForm title="Keterangan" style={{alignItems: 'start'}}>
@@ -299,18 +312,18 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
 
         <Modal className='custom-modal' size={"lg"} open={open} onClose={() => setOpen(false)}>
             <Modal.Header>
-                <Modal.Title>Form Cuti</Modal.Title>
+                <Modal.Title>Form Cuti / Izin</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <InlineForm title="Jenis Cuti">
-                    <SelectPicker placeholder="Jenis Cuti" searchable={false} data={[
+                <InlineForm title="Jenis Cuti / Izin">
+                    <SelectPicker placeholder="Jenis Cuti / Izin" searchable={false} data={[
                         { value: "FULL_DAY", label: "Full Day" },
                         { value: "HALF_DAY", label: "Setengah Hari" },
                         { value: "HOURLY", label: "Per Jam" },
                     ]} value={requestType} onSelect={(val) => setRequestType(val)} block />
                 </InlineForm>
                 <InlineForm title="Kategori">
-                    <SelectPicker searchable placeholder="Jenis Cuti" data={leaveCategories.map(e => (
+                    <SelectPicker searchable placeholder="Jenis Cuti / Izin" data={leaveCategories.map(e => (
                         { value: e.id, label: e.name }
                     ))} value={leaveCategoryId} onSelect={(val) => setLeaveCategoryId(val)} block />
                 </InlineForm>
@@ -402,46 +415,67 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
         </Modal>
         <Modal className='custom-modal' size={"lg"} open={modalApproval} onClose={() => setModalApproval(false)}>
             <Modal.Header>
-                <Modal.Title>Approval Cuti</Modal.Title>
+                <Modal.Title>Approval Cuti / Izin</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Panel header='Data Karyawan' bordered className='mb-4' >
-                    <div className="grid  grid-cols-4 gap-4">
-                        <div className='col-span-3'>
-                            <InlineForm title="Nama" style={{ marginBottom: 15 }}>
-                                {employee?.full_name}
-                            </InlineForm>
-                            <InlineForm title="NIP/NIK" style={{ marginBottom: 15 }}>
-                                {employee?.employee_identity_number}
-                            </InlineForm>
-                            <InlineForm title="Jabatan" style={{ marginBottom: 15 }}>
-                                {employee?.job_title}
-                            </InlineForm>
+                <InlineForm title="Data Karyawan" style={{ alignItems: 'start' }}>
+                    <Panel bordered className='mb-4' >
+                        <div className="grid  grid-cols-4 gap-4">
+                            <div className='col-span-3'>
+                                <InlineForm title="Nama" style={{ marginBottom: 15 }}>
+                                    {employee?.full_name}
+                                </InlineForm>
+                                <InlineForm title="NIP/NIK" style={{ marginBottom: 15 }}>
+                                    {employee?.employee_identity_number}
+                                </InlineForm>
+                                <InlineForm title="Jabatan" style={{ marginBottom: 15 }}>
+                                    {employee?.job_title}
+                                </InlineForm>
+                            </div>
+                            <div className='col-span-1 flex justify-center items-center'>
+                                <Avatar className='mr-2' bordered size={'xxl'} circle src={employee?.picture_url}
+                                    alt={initials(employee?.full_name)} />
+                            </div>
                         </div>
-                        <div className='col-span-1 flex justify-center items-center'>
-                            <Avatar className='mr-2' bordered size={'xxl'} circle src={employee?.picture_url}
-                                alt={initials(employee?.full_name)} />
-                        </div>
+
+                    </Panel >
+                </InlineForm>
+
+                <InlineForm title="Status">
+                    <div>
+                        {selectedLeave?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={selectedLeave?.status} />}
+                        {selectedLeave?.status == "REVIEWED" && <Badge className='text-center' color='blue' content={selectedLeave?.status} />}
+                        {selectedLeave?.status == "APPROVED" && <Badge className='text-center' color='green' content={selectedLeave?.status} />}
+                        {selectedLeave?.status == "REJECTED" && <Badge className='text-center' color='red' content={selectedLeave?.status} />}
                     </div>
-
-                </Panel >
-
+                </InlineForm>
                 <InlineForm title="Catatan" style={{ alignItems: 'start' }}>
-                    <textarea disabled={!(selectedLeave?.status == "DRAFT" || selectedLeave?.status == "REVIEWED")} placeholder='ex: Pengajuan Sudah Limit ....' rows={5} value={remarks} onChange={(el) => setRemarks(el.target.value)} className="form-control" />
+                    {(selectedLeave?.status == "DRAFT" || selectedLeave?.status == "REVIEWED") ?
+                        <textarea placeholder='ex: Pengajuan Sudah Limit ....' rows={5} value={remarks} onChange={(el) => setRemarks(el.target.value)} className="form-control" />
+                        : <ReactMarkdown rehypePlugins={[rehypeRaw]} children={selectedLeave?.remarks} />
+                    }
                 </InlineForm>
 
             </Modal.Body>
-            {(selectedLeave?.status == "DRAFT" || selectedLeave?.status == "REVIEWED") &&
-                <Modal.Footer>
-
-                    <Button className='w-32 h-10' onClick={() => approval("reject")} appearance="primary" color='red'>
-                        <XMarkIcon className=' w-6 mr-2' /> Tolak
-                    </Button>
-                    <Button className='w-32 h-10' onClick={() => approval("approve")} appearance="primary" color='green'>
-                        <CheckIcon className=' w-6 mr-2' /> Terima
-                    </Button>
-                </Modal.Footer>
-            }
+            <Modal.Footer>
+                {(selectedLeave?.status == "DRAFT") &&
+                    <>
+                        <Button className=' h-10' onClick={() => approval("review")} appearance="primary" color='blue'>
+                            <BiBulb className=' w-6 mr-2' /> Review Pengajuan
+                        </Button>
+                    </>
+                }
+                {(selectedLeave?.status == "REVIEWED") &&
+                    <>
+                        <Button className='min-w-32 h-10' onClick={() => approval("reject")} appearance="primary" color='red'>
+                            <XMarkIcon className=' w-6 mr-2' /> Tolak
+                        </Button>
+                        <Button className='min-w-32 h-10' onClick={() => approval("approve")} appearance="primary" color='green'>
+                            <CheckIcon className=' w-6 mr-2' /> Terima
+                        </Button>
+                    </>
+                }
+            </Modal.Footer>
         </Modal>
     </DashboardLayout>);
 }
