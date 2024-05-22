@@ -21,6 +21,8 @@ import { SelectOption } from '@/objects/select_option';
 import { colourStyles } from '@/utils/style';
 import { getEmployees } from '@/repositories/employee';
 import { Employee } from '@/model/employee';
+import { getAutoNumber, getSettingDetail } from '@/repositories/setting';
+import { Setting } from '@/model/setting';
 
 
 interface PayRollPageProps { }
@@ -39,12 +41,20 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
     const [selectedDateRange, setSelectedDateRange] = useState<DateRange>([moment().subtract(1, "months").startOf('month').toDate(), moment().subtract(1, "months").endOf('month').toDate()]);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [selectedEmployee, setselectedEmployee] = useState<SingleValue<SelectOption>>();
+    const [payRollNumber, setPayRollNumber] = useState("");
+    const [settting, setSettting] = useState<Setting | null>(null);
 
     useEffect(() => {
         getAllEmployees("")
     }, []);
     useEffect(() => {
         getAllPayRolls()
+        getSettingDetail()
+            .then(v => v.json())
+            .then(v => setSettting(v.data))
+        getAutoNumber()
+            .then(v => v.json())
+            .then(v => setPayRollNumber(v.data))
 
     }, [page, limit, search]);
 
@@ -78,11 +88,14 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
                 // await editPayRoll(selectedPayRoll!.id, { name, description })
             } else {
                 var resp = await addPayRoll({
+                    pay_roll_number: payRollNumber,
                     title,
                     notes,
                     start_date: moment(selectedDateRange[0]).toISOString(),
                     end_date: moment(selectedDateRange[1]).toISOString(),
-                    employee_id: selectedEmployee?.value!
+                    employee_id: selectedEmployee?.value!,
+                    is_gross_up: settting?.is_gross_up ?? false,
+                    is_effective_rate_average: settting?.is_effective_rate_average ?? false,
                 })
                 var respJson = await resp.json()
                 nav(`/pay_roll/${respJson.data.last_id}`)
@@ -149,6 +162,9 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
                     {/* <InlineForm title="Pay Roll">
                         <input placeholder='ex: Manager Produksi' value={name} onChange={(el) => setName(el.target.value)} type="text" className="form-control" />
                     </InlineForm> */}
+                    <InlineForm title="No. Payroll" >
+                        <input placeholder='ex: PAYROLL-001/I/2024 ....' value={payRollNumber} onChange={(el) => setPayRollNumber(el.target.value)} className="form-control" />
+                    </InlineForm>
                     <InlineForm title="Pilih Karyawan">
                         <Select< SelectOption, false> styles={colourStyles}
                             options={employees.map(e => ({ value: e.id, label: e.full_name }))}

@@ -4,7 +4,7 @@ import { Account } from '@/model/account';
 import { Setting } from '@/model/setting';
 import { LoadingContext } from '@/objects/loading_context';
 import { getAccounts } from '@/repositories/account';
-import { editSetting, getSettingDetail } from '@/repositories/setting';
+import { editSetting, getAutoNumber, getSettingDetail } from '@/repositories/setting';
 import { AUTO_NUMERIC_FORMAL, TOKEN } from '@/utils/constant';
 import { asyncLocalStorage } from '@/utils/helper';
 import { successToast } from '@/utils/helperUi';
@@ -30,6 +30,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const [selectedPayRollAssetAccount, setSelectedPayRollAssetAccount] = useState("")
     const [selectedPayRollTaxAccount, setSelectedPayRollTaxAccount] = useState("")
     const [setting, setSetting] = useState<Setting | null>(null);
+    const [autoNumber, setAutoNumber] = useState("");
     useEffect(() => {
 
         asyncLocalStorage.getItem(TOKEN)
@@ -39,6 +40,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
         getPayRollExpenseAccounts()
         getPayRollAssetAccounts()
         getPayRollTaxAccounts()
+
         // setEditable(true)
 
     }, []);
@@ -94,6 +96,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
     const getAllSetting = async () => {
         try {
+            getAutoNumber()
+                .then(v => v.json())
+                .then(v => setAutoNumber(v.data))
             let resp = await getSettingDetail()
             var respJson = await resp.json()
             setSetting(respJson.data)
@@ -117,6 +122,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
         try {
             let resp = await editSetting({
                 pay_roll_auto_number: setting?.pay_roll_auto_number ?? false,
+                is_effective_rate_average: setting?.is_effective_rate_average ?? false,
+                is_gross_up: setting?.is_gross_up ?? false,
                 pay_roll_auto_format: setting?.pay_roll_auto_format ?? "",
                 pay_roll_static_character: setting?.pay_roll_static_character ?? "",
                 pay_roll_auto_number_character_length: setting?.pay_roll_auto_number_character_length ?? 5,
@@ -226,6 +233,27 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                                     })
                                 }}
                             />
+                        </InlineForm>
+                        <InlineForm title={"Auto Number"}>
+                            {autoNumber}
+                        </InlineForm>
+
+                        <InlineForm title="TER" style={{ marginBottom: 15 }} hints='(Tarif Efektif Rata-Rata) digunakan untuk menentukan tarif pajak efektif yang akan dikenakan pada penghasilan karyawan atau individu, berlaku dari Januari 2024'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    is_effective_rate_average: checked,
+                                })
+                            }} checked={setting?.is_effective_rate_average} />
+                        </InlineForm>
+                        <InlineForm title="Gross Up" style={{ marginBottom: 15 }} hints='metode dimana perusahaan memberikan tunjangan pajak yang besarnya sama dengan PPh 21 terutang.'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    is_gross_up: checked,
+                                })
+
+                            }} checked={setting?.is_gross_up} />
                         </InlineForm>
 
                         <Button className='mt-8' onClick={async () => {

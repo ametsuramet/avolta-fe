@@ -1,5 +1,8 @@
+import { Transaction } from "./transaction"
+
 export interface PayRoll {
   id: string
+  pay_roll_number: string
   title: string
   notes: string
   employee_id: string
@@ -22,10 +25,12 @@ export interface PayRoll {
   take_home_pay_counted: string
   take_home_pay_reimbursement_counted: string
   status: string
+  transactions: Transaction[]
 }
 export interface PayRollReq {
   title: string
   notes: string
+  pay_roll_number: string
   employee_id: string
   start_date: string
   end_date: string

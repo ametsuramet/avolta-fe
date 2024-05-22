@@ -10,12 +10,12 @@ import { LoadingContext } from '@/objects/loading_context';
 import { addAttendance, deleteAttendance, editAttendance, getAttendances } from '@/repositories/attendance';
 import { getEmployeeDetail } from '@/repositories/employee';
 import { getLeaves } from '@/repositories/leave';
-import { editPayRoll, getPayRollDetail } from '@/repositories/pay_roll';
+import { editPayRoll, getPayRollDetail, processPayRoll } from '@/repositories/pay_roll';
 import { deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
 import { getRoleDetail } from '@/repositories/role';
 import { confirmDelete, countOverTime, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/16/solid';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
 import moment from 'moment';
 import 'moment/locale/id';
@@ -36,7 +36,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [payRoll, setPayRoll] = useState<PayRoll | null>(null);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
     const [detailExpanded, setDetailExpanded] = useState(true);
-    const [attendancecExpanded, setAttendanceExpanded] = useState(true);
+    const [attendanceExpanded, setAttendanceExpanded] = useState(true);
+    const [transactionExpanded, setTransactionExpanded] = useState(true);
     const [employee, setEmployee] = useState<Employee | null>(null);
     const [dateAttendanceRanges, setDateAttendanceRanges] = useState<moment.Moment[]>([]);
     const [totalDays, setTotalDays] = useState(0);
@@ -55,6 +56,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     useEffect(() => {
         // console.log(payRoll)
         if (payRoll) {
+            setEditable(payRoll.status == "DRAFT")
             getAttendances({ page: 1, limit: 1000 }, {
                 employeeID: payRoll.employee_id,
                 dateRange: [moment(payRoll.start_date).toDate(), moment(payRoll.end_date + " 23:59:59").toDate()]
@@ -173,6 +175,18 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     }
 
 
+    const runPayroll = async () => {
+        try {
+            await processPayRoll(payRollId!)
+            getDetail()
+        } catch (error) {
+            Swal.fire(`Perhatian`, `${error}`, 'error')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
     return (<DashboardLayout permission='read_pay_roll'>
         <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-8'>
             <div className='flex justify-between items-center'>
@@ -182,6 +196,9 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
             {detailExpanded &&
                 <div className='grid grid-cols-4 gap-4'>
                     <Panel bordered header="Info Payroll" className='col-span-2'>
+                        <InlineForm title="No. Pay Roll" style={{ marginBottom: 15 }}>
+                            {payRoll?.pay_roll_number}
+                        </InlineForm>
                         <InlineForm title="Periode" style={{ marginBottom: 15 }}>
                             <Moment format='DD MMM YYYY'>{payRoll?.start_date}</Moment> ~ <Moment format='DD MMM YYYY'>{payRoll?.end_date}</Moment>
                         </InlineForm>
@@ -197,13 +214,14 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                             {numberToDuration(totalOvertime)}
                         </InlineForm>
                         <InlineForm title="TER" style={{ marginBottom: 15 }} hints='(Tarif Efektif Rata-Rata) digunakan untuk menentukan tarif pajak efektif yang akan dikenakan pada penghasilan karyawan atau individu, berlaku dari Januari 2024'>
-                            <Toggle onChange={(checked) => {
+                            <Toggle disabled={!editable} onChange={(checked) => {
                                 setPayRoll({
                                     ...payRoll!,
                                     is_effective_rate_average: checked
                                 })
                                 setIsLoading(true)
                                 editPayRoll(payRoll!.id, {
+                                    pay_roll_number: payRoll?.pay_roll_number ?? "",
                                     title: payRoll?.title ?? "",
                                     notes: payRoll?.notes ?? "",
                                     employee_id: payRoll?.employee_id!,
@@ -217,13 +235,14 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                             }} checked={payRoll?.is_effective_rate_average} />
                         </InlineForm>
                         <InlineForm title="Gross Up" style={{ marginBottom: 15 }} hints='metode dimana perusahaan memberikan tunjangan pajak yang besarnya sama dengan PPh 21 terutang.'>
-                            <Toggle onChange={(checked) => {
+                            <Toggle disabled={!editable} onChange={(checked) => {
                                 setPayRoll({
                                     ...payRoll!,
                                     is_gross_up: checked
                                 })
                                 setIsLoading(true)
                                 editPayRoll(payRoll!.id, {
+                                    pay_roll_number: payRoll?.pay_roll_number ?? "",
                                     title: payRoll?.title ?? "",
                                     notes: payRoll?.notes ?? "",
                                     employee_id: payRoll?.employee_id!,
@@ -238,10 +257,19 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         </InlineForm>
                         <InlineForm title="Status" style={{ marginBottom: 15 }} >
                             {payRoll?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={payRoll?.status} />}
-                            {payRoll?.status == "REVIEWED" && <Badge className='text-center' color='blue' content={payRoll?.status} />}
+                            {payRoll?.status == "RUNNING" && <Badge className='text-center' color='violet' content={payRoll?.status} />}
                             {payRoll?.status == "APPROVED" && <Badge className='text-center' color='green' content={payRoll?.status} />}
                             {payRoll?.status == "REJECTED" && <Badge className='text-center' color='red' content={payRoll?.status} />}
                         </InlineForm>
+
+                        {payRoll?.status == "DRAFT" &&
+                            <Button onClick={async () => {
+                                confirmDelete(() => {
+                                    runPayroll()
+                                }, 'Perhatian', 'Pastikan semua data telah diperiksa', 'Ya Lanjutkan')
+
+                            }} appearance='primary' color='violet' className='w-48 h-10 mt-12'><RocketLaunchIcon className='mr-2 text-white w-4' /> Proses Payroll</Button>
+                        }
                     </Panel>
                     <Panel bordered header="Info Karyawan" className='col-span-2'>
                         <div className="grid  grid-cols-4 gap-4">
@@ -343,7 +371,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 : money(e.amount)}
                                         </td>
                                         <td>
-                                            {!e.is_default &&
+                                            {!e.is_default && editable &&
                                                 <TrashIcon
                                                     className=" h-5 w-5 text-red-400 hover:text-red-600"
                                                     aria-hidden="true"
@@ -436,7 +464,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 : money(e.amount, 0)}
                                         </td>
                                         <td>
-                                            {!e.is_default && !e.is_tax && !e.is_tax_allowance && !e.is_tax_cost &&
+                                            {!e.is_default && !e.is_tax && !e.is_tax_allowance && !e.is_tax_cost && editable &&
                                                 <TrashIcon
                                                     className=" h-5 w-5 text-red-400 hover:text-red-600"
                                                     aria-hidden="true"
@@ -487,6 +515,26 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
 
                 </div>
+                <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-4'>
+                    <div className='flex justify-between mb-2'>
+                        <h3 className='font-bold mb-4 text-black text-lg'>{"Riwayat Transaksi"}</h3>
+                        {transactionExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} />}
+                    </div>
+                    {transactionExpanded && (payRoll?.transactions ?? []).length &&
+                        <div className=' overflow-auto'>
+                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={[]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
+                                cells:[
+                                    {data: payRoll!.transactions!.filter(e => !e.is_expense).indexOf(e) + 1},
+                                    {data: e.description},
+                                    {data: e.account_destination_name},
+                                    {data: money(e.credit - e.debit)},
+                                ]
+                            }))} />
+                        </div>
+                    }
+
+
+                </div>
                 <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
                     <div className='flex justify-between mb-2'>
                         <h3 className='font-bold mb-4 text-black text-lg'>{"Data Absensi"}</h3>
@@ -515,10 +563,10 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
 
                             }} className=' text-blue-600 font-semibold hover:font-bold hover:text-blue-800 mr-2'><RiFileDownloadFill className='text-blue-600 mr-2' /> Unduh Laporan</Button>
-                            {attendancecExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setAttendanceExpanded(!attendancecExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setAttendanceExpanded(!attendancecExpanded)} />}
+                            {attendanceExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setAttendanceExpanded(!attendanceExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setAttendanceExpanded(!attendanceExpanded)} />}
                         </div>
                     </div>
-                    {attendancecExpanded &&
+                    {attendanceExpanded &&
                         <CustomTable className=''
 
                             headers={["No", "Tgl", "Jam Masuk", "Jam Keluar", "Durasi", "Overtime", ""]} headerClasses={["w-8"]} datasets={dateAttendanceRanges.map(e => {
@@ -609,15 +657,17 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                         data:
                                             <div>
                                                 {selAtt.map(a => (<div className='mb-4' key={a.id}>
-                                                    <TrashIcon
-                                                        className=" h-5 w-5 text-red-400 hover:text-red-600"
-                                                        aria-hidden="true"
-                                                        onClick={() => {
-                                                            confirmDelete(() => {
-                                                                deleteAttendance(a.id).then(v => getDetail())
-                                                            })
-                                                        }}
-                                                    />
+                                                    {editable &&
+                                                        <TrashIcon
+                                                            className=" h-5 w-5 text-red-400 hover:text-red-600"
+                                                            aria-hidden="true"
+                                                            onClick={() => {
+                                                                confirmDelete(() => {
+                                                                    deleteAttendance(a.id).then(v => getDetail())
+                                                                })
+                                                            }}
+                                                        />
+                                                    }
                                                 </div>))}
                                             </div>
                                     }

@@ -22,3 +22,6 @@ export const deleteSetting = async (id:string) => {
 export const getSettingDetail = async () => {
     return await customFetch(`admin/setting`)
 }
+export const getAutoNumber = async () => {
+    return await customFetch(`admin/setting/autonumber`)
+}

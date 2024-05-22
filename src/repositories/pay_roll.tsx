@@ -29,6 +29,11 @@ export const editPayRoll = async (id:string, req: PayRollReq) => {
         body: JSON.stringify(req)
     })
 }
+export const processPayRoll = async (id:string) => {
+    return await customFetch(`admin/payRoll/${id}/Process`, {
+        method: "PUT",
+    })
+}
 
 export const deletePayRoll = async (id:string) => {
     return await customFetch(`admin/payRoll/${id}`, {
