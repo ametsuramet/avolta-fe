@@ -37,7 +37,9 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/role":
 			case "/user":
 			case "/leave_category":
-				return "/company"
+			case "/company":
+			case "/system":
+				return "/setting"
 		
 			default:
 				return location.pathname
@@ -89,13 +91,15 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item eventKey="/report" icon={<LuBarChartBig className='rs-icon' />}>
 						Laporan
 					</Nav.Item>
-					<Nav.Menu placement="rightStart" eventKey="/company" title="Perusahaan" icon={<LuBuilding2 className='rs-icon' />}>
+					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/schedule')}  eventKey="/schedule" >Jadwal</Nav.Item>
 						<Nav.Item onClick={() => nav('/job_title')}  eventKey="/job_title">Posisi / Jabatan</Nav.Item>
 						<Nav.Item onClick={() => nav('/organization')}  eventKey="/organization">Organisasi</Nav.Item>
 						<Nav.Item onClick={() => nav('/leave_category')}  eventKey="/leave_category">Kategori Cuti</Nav.Item>
 						<Nav.Item onClick={() => nav('/role')}  eventKey="/role">Hak Akses</Nav.Item>
 						<Nav.Item onClick={() => nav('/user')}  eventKey="/user">Pengguna</Nav.Item>
+						<Nav.Item onClick={() => nav('/system')}  eventKey="/system">Sistem</Nav.Item>
+						<Nav.Item onClick={() => nav('/company')}  eventKey="/company">Perusahaan</Nav.Item>
 					</Nav.Menu>
 					
 				</Nav>

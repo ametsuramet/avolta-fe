@@ -16,9 +16,6 @@ export const getPayRolls = async (pagination: PaginationReq) => {
 
 } 
 
-
-
-
 export const addPayRoll = async (req: PayRollReq) => {
     return await customFetch(`admin/payRoll`, {
         method: "POST",

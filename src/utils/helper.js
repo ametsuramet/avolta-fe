@@ -244,3 +244,7 @@ export function stringHourToNumber(hour) {
 
 
 }
+
+export function parseAmount(str) {
+    return parseFloat(str.replaceAll(".", ""))
+}

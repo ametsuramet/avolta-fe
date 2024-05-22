@@ -1,3 +1,5 @@
+import { DateRange } from "rsuite/esm/DateRangePicker"
+
 export interface Leave {
   id: string
   name: string
@@ -29,4 +31,13 @@ export interface LeaveReq {
   description: string
   attachment?: string | null
   status?: string | null
+}
+
+
+export interface LeaveFilter  {
+  dateRange?: DateRange | null
+  status?: string | null
+  employeeIDs?: string | null
+  employeeID?: string | null
+  download?: boolean  | null
 }

@@ -17,3 +17,15 @@ export let NON_TAXABLE_CODES = [
     { value: "K/1/2", label: "Kawin Penghasilan Istri Digabung Dengan Suami 2 Orang Tanggungan" },
     { value: "K/1/3", label: "Kawin Penghasilan Istri Digabung Dengan Suami 3 Orang Tanggungan" }
 ]
+export let AUTO_NUMERIC_FORMAL = [
+    "{month-roman}",
+    "{month-mm}",
+    "{month-mmm}",
+    "{month-mmmm}",
+    "{year-yyyy}",
+    "{year-yy}",
+    "{auto-numeric}",
+    "{random-numeric}",
+    "{random-character}",
+    "{static-character}",
+]

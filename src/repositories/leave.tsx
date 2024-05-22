@@ -1,9 +1,9 @@
-import { LeaveReq } from "@/model/leave";
+import { LeaveFilter, LeaveReq } from "@/model/leave";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
 
 
-export const getLeaves = async (pagination: PaginationReq) => {
+export const getLeaves = async (pagination: PaginationReq, filter?: LeaveFilter) => {
     var params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -11,6 +11,26 @@ export const getLeaves = async (pagination: PaginationReq) => {
     };
     if (pagination.search && pagination.search != "") {
         params["search"] = pagination.search
+    }
+
+    if (filter) {
+       
+        if (filter.dateRange) {
+            params["start_date"] = filter.dateRange[0].toISOString()
+            params["end_date"] = filter.dateRange[1].toISOString()
+        }
+       
+        if (filter.employeeIDs) {
+            params["employee_ids"] = filter.employeeIDs
+        }
+        if (filter.employeeID) {
+            params["employee_id"] = filter.employeeID
+        }
+       
+        if (filter.status) {
+            params["status"] = filter.status
+        }
+       
     }
     return await customFetch(`admin/leave?${new URLSearchParams(params)}`)
 

@@ -52,6 +52,11 @@ export const editAttendance = async (id:string, req: AttendanceReq) => {
         body: JSON.stringify(req)
     })
 }
+export const deleteAttendance = async (id:string) => {
+    return await customFetch(`admin/attendance/${id}`, {
+        method: "DELETE",
+    })
+}
 
 export const getAttendanceDetail = async (id: string) => {
     return await customFetch(`admin/attendance/${id}`)

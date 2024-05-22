@@ -15,6 +15,8 @@ import UserPage from "@/pages/User"
 import LeavePage from "@/pages/Leave"
 import PayRollPage from "@/pages/PayRoll"
 import PayRollDetail from "@/pages/PayRollDetail"
+import CompanyPage from "@/pages/Company"
+import SystemPage from "@/pages/System"
 
 
 interface PrivateRoutesProps { }
@@ -37,6 +39,8 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/leave' element={<LeavePage />} />
             <Route path='/role' element={<RolePage />} />
             <Route path='/user' element={<UserPage />} />
+            <Route path='/company' element={<CompanyPage />} />
+            <Route path='/system' element={<SystemPage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     )
