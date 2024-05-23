@@ -461,7 +461,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                         </td>
                                         <td></td>
                                     </tr>
-                                    {payRoll?.costs.map(e =>  <tr key={e.id}>
+                                    {payRoll?.costs.filter(e => !e.debt_deposit).map(e =>  <tr key={e.id}>
                                         <td scope="col" className={`px-6 py-3  text-sm`} colSpan={2}>{e.description}{` (${money(e.tariff *100)}%)`}</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(e.amount, 0)}

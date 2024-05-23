@@ -76,4 +76,5 @@ export interface PayRollCost {
   tariff: number
   bpjs_tk_jht: boolean
   bpjs_tk_jp: boolean
+  debt_deposit: boolean
 }
