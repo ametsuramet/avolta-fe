@@ -29,6 +29,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const [selectedPayRollExpenseAccount, setSelectedPayRollExpenseAccount] = useState("")
     const [selectedPayRollAssetAccount, setSelectedPayRollAssetAccount] = useState("")
     const [selectedPayRollTaxAccount, setSelectedPayRollTaxAccount] = useState("")
+    const [selectedPayRollCostAccount, setSelectedPayRollCostAccount] = useState("")
     const [setting, setSetting] = useState<Setting | null>(null);
     const [autoNumber, setAutoNumber] = useState("");
     useEffect(() => {
@@ -115,6 +116,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
             setSelectedPayRollExpenseAccount(setting?.pay_roll_expense_account_id ?? "")
             setSelectedPayRollAssetAccount(setting?.pay_roll_asset_account_id ?? "")
             setSelectedPayRollTaxAccount(setting?.pay_roll_tax_account_id ?? "")
+            setSelectedPayRollCostAccount(setting?.pay_roll_cost_account_id ?? "")
         }
     }, [setting, payRollPayableAccounts, payRollExpenseAccounts, payRollAssetAccounts, payRollTaxAccounts]);
 
@@ -127,10 +129,16 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                 pay_roll_auto_format: setting?.pay_roll_auto_format ?? "",
                 pay_roll_static_character: setting?.pay_roll_static_character ?? "",
                 pay_roll_auto_number_character_length: setting?.pay_roll_auto_number_character_length ?? 5,
-                pay_roll_payable_account_id: selectedPayRollPayableAccount,
-                pay_roll_expense_account_id: selectedPayRollExpenseAccount,
-                pay_roll_asset_account_id: selectedPayRollAssetAccount,
-                pay_roll_tax_account_id: selectedPayRollTaxAccount
+                pay_roll_payable_account_id: selectedPayRollPayableAccount != "" ? selectedPayRollPayableAccount : null,
+                pay_roll_expense_account_id: selectedPayRollExpenseAccount != "" ? selectedPayRollExpenseAccount : null,
+                pay_roll_asset_account_id: selectedPayRollAssetAccount != "" ? selectedPayRollAssetAccount : null,
+                pay_roll_tax_account_id: selectedPayRollTaxAccount != "" ? selectedPayRollTaxAccount : null,
+                pay_roll_cost_account_id: selectedPayRollCostAccount != "" ? selectedPayRollCostAccount : null,
+                bpjs_kes: setting?.bpjs_kes ?? false,
+                bpjs_tk_jht: setting?.bpjs_tk_jht ?? false,
+                bpjs_tk_jkm: setting?.bpjs_tk_jkm ?? false,
+                bpjs_tk_jp: setting?.bpjs_tk_jp ?? false,
+                bpjs_tk_jkk: setting?.bpjs_tk_jkk ?? false,
             })
             // setCompany(respJson.data)
             getAllSetting()
@@ -145,7 +153,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
 
 
-    return (
+    return ( setting &&
         <DashboardLayout permission='menu_system'>
             <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
                 <div className='flex justify-between'>
@@ -157,6 +165,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                         <InlineForm title="Akun Hutang Gaji">
                             <SelectPicker searchable={true} data={payRollPayableAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedPayRollPayableAccount} onSelect={(val) => setSelectedPayRollPayableAccount(val)} block />
                         </InlineForm>
+                        <InlineForm title="Akun Hutang BPJS">
+                            <SelectPicker searchable={true} data={payRollPayableAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedPayRollCostAccount} onSelect={(val) => setSelectedPayRollCostAccount(val)} block />
+                        </InlineForm>
                         <InlineForm title="Akun Pajak">
                             <SelectPicker searchable={true} data={payRollTaxAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedPayRollTaxAccount} onSelect={(val) => setSelectedPayRollTaxAccount(val)} block />
                         </InlineForm>
@@ -165,6 +176,51 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                         </InlineForm>
                         <InlineForm title="Akun Kas">
                             <SelectPicker searchable={true} data={payRollAssetAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedPayRollAssetAccount} onSelect={(val) => setSelectedPayRollAssetAccount(val)} block />
+                        </InlineForm>
+                        <InlineForm title="BPJS Kesehatan" style={{ marginBottom: 15 }} >
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    bpjs_kes: checked,
+                                })
+
+                            }} checked={setting!.bpjs_kes} />
+                        </InlineForm>
+                        <InlineForm title="BPJS Ketenagakerjaan JHT" style={{ marginBottom: 15 }}  hints='Jaminan Hari Tua'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    bpjs_tk_jht: checked,
+                                })
+
+                            }} checked={setting!.bpjs_tk_jht} />
+                        </InlineForm>
+                        <InlineForm title="BPJS Ketenagakerjaan JKK" style={{ marginBottom: 15 }}  hints='Jaminan Keselamatan Kerja'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    bpjs_tk_jkk: checked,
+                                })
+
+                            }} checked={setting!.bpjs_tk_jkk} />
+                        </InlineForm>
+                        <InlineForm title="BPJS Ketenagakerjaan JP" style={{ marginBottom: 15 }}  hints='Jaminan Pensiun'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    bpjs_tk_jp: checked,
+                                })
+
+                            }} checked={setting!.bpjs_tk_jp} />
+                        </InlineForm>
+                        <InlineForm title="BPJS Ketenagakerjaan JKM" style={{ marginBottom: 15 }}  hints='Jaminan Kematian'>
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    bpjs_tk_jkm: checked,
+                                })
+
+                            }} checked={setting!.bpjs_tk_jkm} />
                         </InlineForm>
                         <Button className='mt-8' onClick={async () => {
                             update()

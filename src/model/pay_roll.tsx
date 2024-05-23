@@ -26,6 +26,7 @@ export interface PayRoll {
   take_home_pay_reimbursement_counted: string
   status: string
   transactions: Transaction[]
+  costs: PayRollCost[]
 }
 export interface PayRollReq {
   title: string
@@ -50,6 +51,7 @@ export interface PayRollItem {
   is_tax_cost: boolean
   is_tax_allowance: boolean
   amount: number
+  tariff: number
 
 }
 export interface PayRollItemReq {
@@ -64,4 +66,14 @@ export interface PayRollItemReq {
   is_tax_cost: boolean
   is_tax_allowance: boolean
   amount: number
+}
+
+
+export interface PayRollCost {
+  id: string
+  description: string
+  amount: number
+  tariff: number
+  bpjs_tk_jht: boolean
+  bpjs_tk_jp: boolean
 }

@@ -4,27 +4,28 @@ import InlineForm from '@/components/inline_form';
 import { Attendance, AttendanceReq } from '@/model/attendance';
 import { Employee } from '@/model/employee';
 import { Leave } from '@/model/leave';
-import { PayRoll } from '@/model/pay_roll';
+import { PayRoll, PayRollItem, PayRollItemReq } from '@/model/pay_roll';
 import { Schedule } from '@/model/schedule';
 import { LoadingContext } from '@/objects/loading_context';
 import { addAttendance, deleteAttendance, editAttendance, getAttendances } from '@/repositories/attendance';
 import { getEmployeeDetail } from '@/repositories/employee';
 import { getLeaves } from '@/repositories/leave';
 import { editPayRoll, getPayRollDetail, processPayRoll } from '@/repositories/pay_roll';
-import { deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
+import { addPayRollItem, deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
 import { getRoleDetail } from '@/repositories/role';
 import { confirmDelete, countOverTime, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/16/solid';
-import { RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
 import moment from 'moment';
 import 'moment/locale/id';
 import { useContext, useEffect, useState, type FC } from 'react';
 import CurrencyInput from 'react-currency-input-field';
+import { BsFloppy2 } from 'react-icons/bs';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Badge, Button, Panel, Toggle } from 'rsuite';
+import { Avatar, Badge, Button, ButtonToolbar, IconButton, Modal, Panel, SelectPicker, Toggle } from 'rsuite';
 import Swal from 'sweetalert2';
 
 interface PayRollDetailProps { }
@@ -47,6 +48,9 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [itemExpanded, setItemExpanded] = useState(true);
     const [editable, setEditable] = useState(true);
     const [mountedInput, setMountedInput] = useState(true);
+    const [modalIncome, setModalIncome] = useState(false);
+    const [modalExpense, setModalExpense] = useState(false);
+    const [inputItem, setInputItem] = useState<PayRollItemReq | null>(null);
 
     useEffect(() => {
         getDetail()
@@ -318,14 +322,35 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                             <table className="w-full h-full text-sm text-left rtl:text-right text-gray-700">
                                 <thead>
                                     <tr>
-                                        <td colSpan={2}>
-                                            <h3 className='p-2 text-xl font-bold'>Pemasukan</h3>
+                                        <td colSpan={3}>
+                                            <h3 className='p-2 text-xl font-bold'>Pendapatan</h3>
+                                        </td>
+                                        <td className='text-right'>
+                                            {editable &&
+                                                <Button size='sm' onClick={() => {
+                                                    setInputItem({
+                                                        pay_roll_id: payRollId!,
+                                                        item_type: "SALARY",
+                                                        title: "",
+                                                        notes: "",
+                                                        is_default: false,
+                                                        is_deductible: false,
+                                                        is_tax: false,
+                                                        tax_auto_count: false,
+                                                        is_tax_cost: false,
+                                                        is_tax_allowance: false,
+                                                        amount: 0,
+                                                    })
+                                                    setModalIncome(true)
+                                                }} appearance='ghost' ><PlusIcon className='w-4 mr-2' /> Tambah</Button>
+                                            }
                                         </td>
                                     </tr>
                                 </thead>
                                 <thead className="text-base text-gray-700 font-semibold " >
                                     <tr>
                                         <th scope="col" className={`px-6 py-3 `}>Keterangan</th>
+                                        <th scope="col" className={`px-6 py-3 `}>Catatan</th>
                                         <th scope="col" className={`px-6 py-3 text-right`}>Jumlah</th>
                                         <th scope="col" className={`px-6 py-3 text-right w-16`}></th>
                                     </tr>
@@ -334,6 +359,34 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
                                     {(payRoll?.items ?? []).filter(e => e.item_type != "DEDUCTION").map(e => (<tr key={e.id}>
                                         <td scope="col" className={`px-6 py-3 `}>{e.title}</td>
+                                        <td scope="col" className={`px-6 py-3 `}>
+                                            {editable ?
+                                                <input placeholder='catatan ...' className='w-full' id={`notes-${e.id}`} type="text" defaultValue={e.notes} onBlur={(el) => {
+                                                    setIsLoading(true)
+                                                    editPayRollItem(e.id, {
+                                                        pay_roll_id: payRollId!,
+                                                        item_type: e.item_type,
+                                                        title: e.title,
+                                                        notes: el.target.value,
+                                                        is_default: e.is_default,
+                                                        is_deductible: e.is_deductible,
+                                                        is_tax: e.is_tax,
+                                                        tax_auto_count: e.tax_auto_count,
+                                                        is_tax_cost: e.is_tax_cost,
+                                                        is_tax_allowance: e.is_tax_allowance,
+                                                        amount: e.amount,
+                                                    })
+                                                        .then(() => getDetail())
+                                                        .finally(() => {
+                                                            setIsLoading(false)
+                                                        })
+                                                }} onKeyUp={(el) => {
+                                                    if (el.key == "Enter") {
+                                                        document.getElementById(`notes-${e.id}`)!.blur();
+                                                    }
+                                                }} />
+                                                : <small>{e.notes}</small>}
+                                        </td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {editable && !e.is_default && mountedInput ?
                                                 <CurrencyInput
@@ -386,7 +439,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                     </tr>))}
                                     {(payRoll?.tax_allowance ?? 0) > 0 &&
                                         <tr>
-                                            <td scope="col" className={`px-6 py-3 `}>Tunjangan PPH</td>
+                                            <td scope="col" className={`px-6 py-3 `} colSpan={2}>Tunjangan PPH</td>
                                             <td scope="col" className={`px-6 py-3 text-right`}>
                                                 {money(payRoll?.tax_allowance, 0)}  </td>
                                             <td></td>
@@ -395,38 +448,97 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                 </tbody>
                                 <tbody>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-base`}>Total Pemasukan</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>Total Pendapatan</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(payRoll?.total_income, 0)}
                                         </td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-sm`}>Total Reimbursement</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-sm`} colSpan={2}>Total Reimbursement</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(payRoll?.total_reimbursement, 0)}
                                         </td>
                                         <td></td>
                                     </tr>
+                                    {payRoll?.costs.map(e =>  <tr key={e.id}>
+                                        <td scope="col" className={`px-6 py-3  text-sm`} colSpan={2}>{e.description}{` (${money(e.tariff *100)}%)`}</td>
+                                        <td scope="col" className={`px-6 py-3 text-right`}>
+                                            {money(e.amount, 0)}
+                                        </td>
+                                        <td></td>
+                                    </tr>)}
                                 </tbody>
                                 <thead>
                                     <tr>
-                                        <td colSpan={2}>
+                                        <td colSpan={3}>
                                             <h3 className='p-2 text-xl font-bold'>Potongan</h3>
+
+                                        </td>
+                                        <td className='text-right'>
+                                            {editable &&
+                                                <Button
+                                                    onClick={() => {
+                                                        setInputItem({
+                                                            pay_roll_id: payRollId!,
+                                                            item_type: "DEDUCTION",
+                                                            title: "",
+                                                            notes: "",
+                                                            is_default: false,
+                                                            is_deductible: false,
+                                                            is_tax: false,
+                                                            tax_auto_count: false,
+                                                            is_tax_cost: false,
+                                                            is_tax_allowance: false,
+                                                            amount: 0,
+                                                        })
+                                                        setModalExpense(true)
+                                                    }}
+                                                    size='sm' appearance='ghost' ><PlusIcon className='w-4 mr-2' /> Tambah</Button>
+                                            }
                                         </td>
                                     </tr>
                                 </thead>
                                 <thead className="text-base text-gray-700 font-semibold " >
                                     <tr>
                                         <th scope="col" className={`px-6 py-3 `}>Keterangan</th>
+                                        <th scope="col" className={`px-6 py-3 `}>Catatan</th>
                                         <th scope="col" className={`px-6 py-3 text-right`}>Jumlah</th>
                                         <th scope="col" className={`px-6 py-3 text-right w-16`}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
 
-                                    {(payRoll?.items ?? []).filter(e => e.item_type == "DEDUCTION" && !e.is_tax_cost).map(e => (<tr key={e.id}>
+                                    {(payRoll?.items ?? []).filter(e => e.item_type == "DEDUCTION" && !e.is_tax_cost && !e.is_tax).map(e => (<tr key={e.id}>
                                         <td scope="col" className={`px-6 py-3 `}>{e.title}</td>
+                                        <td scope="col" className={`px-6 py-3 `}>
+                                            {editable ?
+                                                <input placeholder='catatan ...' className='w-full' id={`notes-${e.id}`} type="text" defaultValue={e.notes} onBlur={(el) => {
+                                                    setIsLoading(true)
+                                                    editPayRollItem(e.id, {
+                                                        pay_roll_id: payRollId!,
+                                                        item_type: e.item_type,
+                                                        title: e.title,
+                                                        notes: el.target.value,
+                                                        is_default: e.is_default,
+                                                        is_deductible: e.is_deductible,
+                                                        is_tax: e.is_tax,
+                                                        tax_auto_count: e.tax_auto_count,
+                                                        is_tax_cost: e.is_tax_cost,
+                                                        is_tax_allowance: e.is_tax_allowance,
+                                                        amount: e.amount,
+                                                    })
+                                                        .then(() => getDetail())
+                                                        .finally(() => {
+                                                            setIsLoading(false)
+                                                        })
+                                                }} onKeyUp={(el) => {
+                                                    if (el.key == "Enter") {
+                                                        document.getElementById(`notes-${e.id}`)!.blur();
+                                                    }
+                                                }} />
+                                                : <small>{e.notes}</small>}
+                                        </td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {editable && !e.is_default && !e.is_tax && mountedInput ?
                                                 <CurrencyInput
@@ -480,30 +592,37 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                 </tbody>
                                 <tbody>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-base`}>Total Potongan</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>Total Potongan</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(payRoll?.total_deduction, 0)}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>PPH</td>
+                                        <td scope="col" className={`px-6 py-3 text-right`}>
+                                            {money(payRoll?.total_tax, 0)}
                                         </td>
                                         <td></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-base`}>Biaya Jabatan</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>Biaya Jabatan</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(payRoll?.tax_cost, 0)}
                                         </td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-base`}>Take Home Pay + Reimbursement</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>Take Home Pay + Reimbursement</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money((payRoll?.take_home_pay ?? 0) + (payRoll?.total_reimbursement ?? 0), 0)}
                                         </td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td scope="col" className={`px-6 py-3  font-bold text-base`}>Terbilang</td>
+                                        <td scope="col" className={`px-6 py-3  font-bold text-base`} colSpan={2}>Terbilang</td>
                                         <td scope="col" className={`px-6 py-3 text-right text-lg`} colSpan={2}>
                                             {(payRoll?.take_home_pay_reimbursement_counted)}
                                         </td>
@@ -515,26 +634,27 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
 
                 </div>
-                <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-4'>
-                    <div className='flex justify-between mb-2'>
-                        <h3 className='font-bold mb-4 text-black text-lg'>{"Riwayat Transaksi"}</h3>
-                        {transactionExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} />}
-                    </div>
-                    {transactionExpanded && (payRoll?.transactions ?? []).length &&
+                {transactionExpanded && (payRoll?.transactions ?? []).length > 0 &&
+                    <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-4'>
+                        <div className='flex justify-between mb-2'>
+                            <h3 className='font-bold mb-4 text-black text-lg'>{"Riwayat Transaksi"}</h3>
+                            {transactionExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} />}
+                        </div>
+
                         <div className=' overflow-auto'>
-                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={[]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
-                                cells:[
-                                    {data: payRoll!.transactions!.filter(e => !e.is_expense).indexOf(e) + 1},
-                                    {data: e.description},
-                                    {data: e.account_destination_name},
-                                    {data: money(e.credit - e.debit)},
+                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={["","","","text-right"]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
+                                cells: [
+                                    { data: payRoll!.transactions!.filter(e => !e.is_expense).indexOf(e) + 1 },
+                                    { data: e.description },
+                                    { data: e.account_destination_name },
+                                    { data: money(e.credit - e.debit, 0), className: "text-right" },
                                 ]
                             }))} />
                         </div>
-                    }
 
 
-                </div>
+                    </div>
+                }
                 <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
                     <div className='flex justify-between mb-2'>
                         <h3 className='font-bold mb-4 text-black text-lg'>{"Data Absensi"}</h3>
@@ -712,6 +832,136 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                 </div>
             </div>
         </div>
+        <Modal className='custom-modal' size={"md"} open={modalIncome} onClose={() => setModalIncome(false)}>
+            <Modal.Header>
+                <Modal.Title>Form Pendapatan</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InlineForm title="Tipe">
+                    <SelectPicker value={inputItem?.item_type!}
+                        onSelect={(val) => {
+                            setInputItem({
+                                ...inputItem!,
+                                item_type: val,
+                            })
+                        }}
+                        block placeholder="Pilih Tipe" data={[{ value: "SALARY", label: "Gaji/Upah" }, { value: "ALLOWANCE", label: "Tunjangan" }, { value: "OVERTIME", label: "Lembur" }, { value: "REIMBURSEMENT", label: "Reimbursement" }]}></SelectPicker>
+                </InlineForm>
+                <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
+                    <input placeholder='ex: Tunjangan Pendidikan ....' value={inputItem?.title} onChange={(el) => setInputItem({
+                        ...inputItem!,
+                        title: el.target.value,
+                    })} className="form-control" />
+                </InlineForm>
+
+                <InlineForm title="Catatan" style={{ alignItems: 'start' }}>
+                    <textarea placeholder='ex: Tunjangan Pendidikan  ....' rows={5} value={inputItem?.notes} onChange={(el) => setInputItem({
+                        ...inputItem!,
+                        notes: el.target.value,
+                    })} className="form-control" />
+                </InlineForm>
+                <InlineForm title="Jumlah" style={{ alignItems: 'start' }}>
+                    <CurrencyInput
+                        className='form-control'
+                        groupSeparator="."
+                        decimalSeparator=","
+                        value={inputItem?.amount}
+                        onValueChange={(_, __, val) => {
+                            setInputItem({
+                                ...inputItem!,
+                                amount: val?.float ?? 0,
+                            })
+                        }}
+                    />
+                </InlineForm>
+
+            </Modal.Body>
+            <Modal.Footer>
+                <Button className='mr-2' appearance='primary' onClick={async () => {
+                    try {
+                        setIsLoading(true)
+                        await addPayRollItem(inputItem!)
+                        setInputItem(null)
+                        setModalIncome(false)
+                        getDetail()
+                    } catch (error) {
+                        Swal.fire(`Perhatian`, `${error}`, 'error')
+                    } finally {
+                        setIsLoading(false)
+                    }
+
+
+                }}>
+                    <BsFloppy2 className='mr-2' /> Simpan
+                </Button>
+            </Modal.Footer>
+        </Modal>
+
+
+        <Modal className='custom-modal' size={"md"} open={modalExpense} onClose={() => setModalExpense(false)}>
+            <Modal.Header>
+                <Modal.Title>Form Potongan</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+
+                <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
+                    <input placeholder='ex: Potongan Tidak Masuk ....' value={inputItem?.title} onChange={(el) => setInputItem({
+                        ...inputItem!,
+                        title: el.target.value,
+                    })} className="form-control" />
+                </InlineForm>
+
+                <InlineForm title="Catatan" style={{ alignItems: 'start' }}>
+                    <textarea placeholder='ex: Potongan Tidak Masuk  ....' rows={5} value={inputItem?.notes} onChange={(el) => setInputItem({
+                        ...inputItem!,
+                        notes: el.target.value,
+                    })} className="form-control" />
+                </InlineForm>
+
+                <InlineForm title="Non Deductible" style={{ alignItems: 'start' }} hints='Non-Deductible Expenses adalah biaya-biaya yang tidak dapat dikurangkan dari penghasilan bruto dalam hal perhitungan Penghasilan Kena Pajak. Contoh Non Deductible Expense adalah pembayaran imbalan dalam bentuk natura, sumbangan, pengeluaran untuk kepentingan pribadi pemilik, cadangan atau pemupukan dana cadangan, pajak penghasilan, dan biaya lainnya yang tidak diperbolehkan'>
+                    <Toggle disabled={!editable} onChange={(checked) => {
+                        setInputItem({
+                            ...inputItem!,
+                            is_deductible: !checked,
+                        })
+                    }} checked={!(inputItem?.is_deductible ?? false)} />
+                </InlineForm>
+                <InlineForm title="Jumlah" style={{ alignItems: 'start' }}>
+                    <CurrencyInput
+                        className='form-control'
+                        groupSeparator="."
+                        decimalSeparator=","
+                        value={inputItem?.amount}
+                        onValueChange={(_, __, val) => {
+                            setInputItem({
+                                ...inputItem!,
+                                amount: val?.float ?? 0,
+                            })
+                        }}
+                    />
+                </InlineForm>
+
+            </Modal.Body>
+            <Modal.Footer>
+                <Button className='mr-2' appearance='primary' onClick={async () => {
+                    try {
+                        setIsLoading(true)
+                        await addPayRollItem(inputItem!)
+                        setInputItem(null)
+                        setModalExpense(false)
+                        getDetail()
+                    } catch (error) {
+                        Swal.fire(`Perhatian`, `${error}`, 'error')
+                    } finally {
+                        setIsLoading(false)
+                    }
+
+
+                }}>
+                    <BsFloppy2 className='mr-2' /> Simpan
+                </Button>
+            </Modal.Footer>
+        </Modal>
 
     </DashboardLayout>);
 }
