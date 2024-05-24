@@ -3,7 +3,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { FC } from 'react';
 import { Pagination } from 'rsuite';
 
-export type TableCells = { data: React.ReactNode, className?: string }[]
+export type TableCells = { data: React.ReactNode, className?: string, colSpan?: number }[]
 export interface TableRecord {
     cells: TableCells
     className?: string
@@ -104,7 +104,7 @@ const CustomTable: FC<CustomTableProps> = ({
                             return <tr  onClick={record.onClick} key={`row-${datasets.indexOf(record)}`} className={`bg-white border-b  ${record.className} `}>
                                 {record.cells.map(cell => {
                                     return (
-                                        <td key={`cell-${record.cells.indexOf(cell)}`} className={`px-6 py-4 ${cell.className ?? ''}`}>{cell.data}</td>
+                                        <td colSpan={cell.colSpan} key={`cell-${record.cells.indexOf(cell)}`} className={`px-6 py-4 ${cell.className ?? ''}`}>{cell.data}</td>
                                     );
                                 })}
 

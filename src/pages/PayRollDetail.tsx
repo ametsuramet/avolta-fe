@@ -1,21 +1,25 @@
 import CustomTable from '@/components/custom_table';
 import DashboardLayout from '@/components/dashboard_layout';
 import InlineForm from '@/components/inline_form';
+import { Account } from '@/model/account';
 import { Attendance, AttendanceReq } from '@/model/attendance';
 import { Employee } from '@/model/employee';
 import { Leave } from '@/model/leave';
-import { PayRoll, PayRollItem, PayRollItemReq } from '@/model/pay_roll';
+import { PayRoll, PayRollItemReq } from '@/model/pay_roll';
 import { Reimbursement } from '@/model/reimbursement';
-import { Schedule } from '@/model/schedule';
+import { Transaction } from '@/model/transaction';
 import { LoadingContext } from '@/objects/loading_context';
+import { getAccounts } from '@/repositories/account';
 import { addAttendance, deleteAttendance, editAttendance, getAttendances } from '@/repositories/attendance';
 import { getEmployeeDetail } from '@/repositories/employee';
 import { getLeaves } from '@/repositories/leave';
-import { editPayRoll, getPayRollDetail, processPayRoll } from '@/repositories/pay_roll';
+import { editPayRoll, getPayRollDetail, paymentPayRoll, processPayRoll } from '@/repositories/pay_roll';
 import { addPayRollItem, deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
 import { getReimbursements } from '@/repositories/reimbursement';
-import { getRoleDetail } from '@/repositories/role';
-import { confirmDelete, countOverTime, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
+import { getSettingDetail } from '@/repositories/setting';
+import { addTransaction, getTransactionDetail } from '@/repositories/transaction';
+import { confirmDelete, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
+import { toolTip } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/16/solid';
 import { PlusIcon, RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
@@ -24,10 +28,11 @@ import 'moment/locale/id';
 import { useContext, useEffect, useState, type FC } from 'react';
 import CurrencyInput from 'react-currency-input-field';
 import { BsFloppy2 } from 'react-icons/bs';
+import { LuWallet2 } from 'react-icons/lu';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Badge, Button, ButtonToolbar, IconButton, Modal, Panel, SelectPicker, Toggle } from 'rsuite';
+import { Avatar, Badge, Button, DatePicker, Modal, Panel, SelectPicker, Toggle } from 'rsuite';
 import Swal from 'sweetalert2';
 
 interface PayRollDetailProps { }
@@ -54,11 +59,56 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [modalExpense, setModalExpense] = useState(false);
     const [inputItem, setInputItem] = useState<PayRollItemReq | null>(null);
     const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
+    const [transactionPayment, setTransactionPayment] = useState<Transaction | null>(null);
+    const [date, setDate] = useState<Date>(moment().toDate());
+    const [description, setDescription] = useState("");
+    const [amount, setAmount] = useState(0);
+    const [paid, setPaid] = useState(0);
+    const [assetAccounts, setAssetAccounts] = useState<Account[]>([]);
+    const [selectedAssetAccount, setSelectedAssetAccount] = useState("")
+
+
 
     useEffect(() => {
         getDetail()
-
+        getlAssetAccounts()
+        getAllSetting()
     }, []);
+
+    const getAllSetting = async () => {
+        try {
+
+            let resp = await getSettingDetail()
+            var respJson = await resp.json()
+            setSelectedAssetAccount(respJson.data.pay_roll_asset_account_id)
+        } catch (error) {
+            Swal.fire(`Perhatian`, `${error}`, 'error')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const getlAssetAccounts = async () => {
+        try {
+            setIsLoading(true)
+            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
+            let respJson = await resp.json()
+            setAssetAccounts(respJson.data)
+        } catch (error) {
+
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        if (transactionPayment) {
+            setDescription(`Pembayaran ${transactionPayment.description}`)
+            let totalPaid = transactionPayment.transaction_refs.map(e => e.debit).reduce((a, b) => a + b, 0)
+            setPaid(totalPaid)
+            setAmount(transactionPayment.credit - totalPaid)
+        }
+    }, [transactionPayment]);
 
     useEffect(() => {
         // console.log(payRoll)
@@ -641,23 +691,105 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
 
                 </div>
-                {transactionExpanded && (payRoll?.transactions ?? []).length > 0 &&
+
+                {(payRoll?.transactions ?? []).length > 0 &&
                     <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-4'>
                         <div className='flex justify-between mb-2'>
                             <h3 className='font-bold mb-4 text-black text-lg'>{"Riwayat Transaksi"}</h3>
                             {transactionExpanded ? <ChevronDownIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} /> : <ChevronUpIcon className='cursor-pointer w-5' onClick={() => setTransactionExpanded(!transactionExpanded)} />}
                         </div>
+                        {transactionExpanded &&
+                            <div className=' overflow-auto'>
+                                <CustomTable
 
-                        <div className=' overflow-auto'>
-                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={["", "", "", "text-right"]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
-                                cells: [
-                                    { data: payRoll!.transactions!.filter(e => !e.is_expense).indexOf(e) + 1 },
-                                    { data: e.description },
-                                    { data: e.account_destination_name },
-                                    { data: money(e.credit - e.debit, 0), className: "text-right" },
-                                ]
-                            }))} />
-                        </div>
+                                    headers={["No", "Tgl", "Keterangan", "Kategori", "Jumlah", ""]} headerClasses={["", "", "", "", "text-right"]} datasets={[
+                                        ...(payRoll?.transactions ?? []).filter(e => !e.is_expense && !e.is_pay_roll_payment).map(e => ({
+                                            cells: [
+                                                { data: payRoll!.transactions!.filter(e => !e.is_expense && !e.is_pay_roll_payment).indexOf(e) + 1 },
+                                                { data: <Moment format='DD/MM/YYYY'>{e.date}</Moment> },
+                                                { data: e.description },
+                                                { data: e.account_destination_name },
+                                                { data: money(e.credit - e.debit, 0), className: "text-right" },
+                                                {
+                                                    data: !e.is_pay_roll_payment && <div>
+                                                        {toolTip("Pembayaran", <LuWallet2 onClick={() => {
+                                                            getTransactionDetail(e.id)
+                                                                .then(v => v.json())
+                                                                .then(v => {
+                                                                    setTransactionPayment(v.data)
+
+                                                                })
+                                                        }} className='w-6 cursor-pointer text-blue-400 hover:text-blue-600' />)}
+
+                                                    </div>, className: "text-right"
+                                                },
+                                            ]
+                                        })),
+                                        {
+                                            cells: [
+                                                { data: "" },
+                                                { data: <div className=' font-bold'>Total</div> },
+                                                { data: "" },
+                                                { data: "" },
+                                                { data: money((payRoll?.transactions ?? []).filter(s => !s.is_expense && !s.is_pay_roll_payment).map(s => s.credit).reduce((a, b) => a + b), 0), className: "text-right" },
+                                            ]
+                                        },
+                                        {
+                                            cells: [
+                                                { data: <h3 className='font-bold text-black text-base'>Riwayat Pembayaran</h3>, colSpan: 3 },
+                                            ]
+                                        },
+
+
+                                        ...(payRoll?.transactions ?? []).filter(e => e.is_pay_roll_payment).map(e => ({
+                                            cells: [
+                                                { data: payRoll!.transactions!.filter(e => e.is_pay_roll_payment).indexOf(e) + 1 },
+                                                { data: <Moment format='DD/MM/YYYY'>{e.date}</Moment> },
+                                                { data: e.description },
+                                                { data: e.account_destination_name },
+                                                { data: money(e.debit - e.credit, 0), className: "text-right" },
+                                                {
+                                                    data: !e.is_pay_roll_payment && <div>
+                                                        {toolTip("Pembayaran", <LuWallet2 onClick={() => {
+                                                            getTransactionDetail(e.id)
+                                                                .then(v => v.json())
+                                                                .then(v => {
+                                                                    setTransactionPayment(v.data)
+
+                                                                })
+                                                        }} className='w-6 cursor-pointer text-blue-400 hover:text-blue-600' />)}
+
+                                                    </div>, className: "text-right"
+                                                },
+                                            ]
+                                        })),
+                                        {
+                                            cells: [
+                                                { data: "" },
+                                                { data: <div className=' font-bold'>Total</div> },
+                                                { data: "" },
+                                                { data: "" },
+                                                { data: money((payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b), 0), className: "text-right" },
+                                            ]
+                                        },
+                                        {
+                                            cells: [
+                                                { data: <h3 className='font-bold text-black text-base'>Sisa Pembayaran</h3>, colSpan: 3 },
+                                                { data: "" },
+                                                {
+                                                    data: money(
+                                                        (
+                                                            (payRoll?.transactions ?? []).filter(s => !s.is_expense && !s.is_pay_roll_payment).map(s => s.credit).reduce((a, b) => a + b, 0) -
+                                                            (payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b)
+                                                        ), 0
+                                                    ), className: "text-right"
+                                                },
+                                            ]
+                                        },
+                                    ]} />
+                            </div>
+                        }
+
 
 
                     </div>
@@ -858,7 +990,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                     <InlineForm title="Reimbursement">
                         <SelectPicker value={inputItem?.reimbursement_id!}
                             onSelect={(val) => {
-                                
+
                                 setInputItem({
                                     ...inputItem!,
                                     reimbursement_id: val,
@@ -866,7 +998,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                     title: reimbursements.find(e => e.id == `${val}`)?.name ?? "",
                                 })
                             }}
-                            block placeholder="Pilih Reimbursement" data={reimbursements.map(e => ({value: e.id, label: `${e.name} - ${money(e.total)}`}))}></SelectPicker>
+                            block placeholder="Pilih Reimbursement" data={reimbursements.map(e => ({ value: e.id, label: `${e.name} - ${money(e.total)}` }))}></SelectPicker>
                     </InlineForm>
                 }
                 <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
@@ -981,6 +1113,63 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
                 }}>
                     <BsFloppy2 className='mr-2' /> Simpan
+                </Button>
+            </Modal.Footer>
+        </Modal>
+
+        <Modal className='custom-modal' size={"md"} open={transactionPayment != null} onClose={() => setTransactionPayment(null)}>
+            <Modal.Header>
+                <Modal.Title>Pembayaran {transactionPayment?.description}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InlineForm title="Tanggal">
+                    <DatePicker className='w-full' value={date} onChange={(val) => setDate(val!)} placement="bottomEnd" format='dd/MM/yyyy' />
+                </InlineForm>
+                <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
+                    <textarea placeholder='Keterangan ....' rows={5} value={description} onChange={(el) => setDescription(el.target.value)} className="form-control" />
+                </InlineForm>
+                <InlineForm title="Akun Kas">
+                    <SelectPicker searchable={true} data={assetAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedAssetAccount} onSelect={(val) => setSelectedAssetAccount(val)} block />
+                </InlineForm>
+
+                <InlineForm title="Jumlah">
+                    {mountedInput && amount > 0 ?
+                        <CurrencyInput
+                            decimalsLimit={0}
+                            id={`payment-${transactionPayment?.id}`}
+                            className='form-control'
+                            groupSeparator="."
+                            decimalSeparator=","
+                            value={amount}
+                            onValueChange={(_, __, val) => {
+                                setAmount(val?.float ?? 0)
+                            }}
+
+                        />
+                        : money(amount)
+                    }
+                </InlineForm>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button disabled={amount == 0} appearance='primary' color='orange' onClick={() => {
+                    setIsLoading(true)
+                    paymentPayRoll(payRollId!, {
+                        transaction_ref_id: transactionPayment!.id,
+                        date: date.toISOString(),
+                        amount: amount,
+                        account_destination_id: selectedAssetAccount,
+                        description: description
+                    })
+                        .then((v) => {
+                            setTransactionPayment(null)
+                            setDescription("")
+                            setAmount(0)
+                            getDetail()
+                        })
+                        .catch(error => Swal.fire(`Perhatian`, `${error}`, 'error'))
+                        .finally(() => setIsLoading(false))
+                }}>
+                    <LuWallet2 className='w-6' /> Simpan Pembayaran
                 </Button>
             </Modal.Footer>
         </Modal>

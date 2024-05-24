@@ -1,6 +1,7 @@
 import { NullString } from "@/objects/null_object"
 
 export interface Transaction {
+  id: string
   date: string
   uuid: string
   code?: string
@@ -47,6 +48,9 @@ export interface Transaction {
   tags: any[]
   product_serial_number_id: string
   is_secondary_tax: boolean
+  is_pay_roll_payment: boolean
+  is_reimbursement_payment: boolean
+  transaction_refs: Transaction[]
   
 }
 
@@ -68,7 +72,6 @@ export interface PaymentReq {
   is_bill_payment: boolean
 }
 export interface TransactionReq {
-  uuid?: NullString | null
   description: string
   notes: string
   credit: number

@@ -68,6 +68,13 @@ export interface PayRollItemReq {
   is_tax_allowance: boolean
   amount: number
 }
+export interface PayRollPaymentReq{
+  transaction_ref_id: string
+  date: string
+  amount: number
+  account_destination_id: string
+  description: string
+}
 
 
 export interface PayRollCost {

@@ -1,4 +1,4 @@
-import { PayRollReq } from "@/model/pay_roll";
+import { PayRollPaymentReq, PayRollReq } from "@/model/pay_roll";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
 
@@ -14,7 +14,7 @@ export const getPayRolls = async (pagination: PaginationReq) => {
     }
     return await customFetch(`admin/payRoll?${new URLSearchParams(params)}`)
 
-} 
+}
 
 export const addPayRoll = async (req: PayRollReq) => {
     return await customFetch(`admin/payRoll`, {
@@ -23,19 +23,25 @@ export const addPayRoll = async (req: PayRollReq) => {
     })
 }
 
-export const editPayRoll = async (id:string, req: PayRollReq) => {
+export const editPayRoll = async (id: string, req: PayRollReq) => {
     return await customFetch(`admin/payRoll/${id}`, {
         method: "PUT",
         body: JSON.stringify(req)
     })
 }
-export const processPayRoll = async (id:string) => {
+export const processPayRoll = async (id: string) => {
     return await customFetch(`admin/payRoll/${id}/Process`, {
         method: "PUT",
     })
 }
+export const paymentPayRoll = async (id: string, req: PayRollPaymentReq) => {
+    return await customFetch(`admin/payRoll/${id}/Payment`, {
+        method: "PUT",
+        body: JSON.stringify(req)
+    })
+}
 
-export const deletePayRoll = async (id:string) => {
+export const deletePayRoll = async (id: string) => {
     return await customFetch(`admin/payRoll/${id}`, {
         method: "DELETE",
     })

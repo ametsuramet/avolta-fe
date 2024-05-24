@@ -162,9 +162,11 @@ const ReimbursementDetail: FC<ReimbursementDetailProps> = ({ }) => {
                     <InlineForm title="Total">
                         {money(reimbursement?.total)}
                     </InlineForm>
+                    {(reimbursement?.items??[]).length > 0 &&
                     <InlineForm title="Sisa">
                         {(reimbursement?.balance ?? 0) > 0 ? money(reimbursement?.balance) : <Badge className='text-center' color='blue' content={"LUNAS"} />}
                     </InlineForm>
+                    }
                     <InlineForm title="Catatan">
                         {reimbursement?.notes}
                     </InlineForm>
