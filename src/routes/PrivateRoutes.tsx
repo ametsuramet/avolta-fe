@@ -17,6 +17,8 @@ import PayRollPage from "@/pages/PayRoll"
 import PayRollDetail from "@/pages/PayRollDetail"
 import CompanyPage from "@/pages/Company"
 import SystemPage from "@/pages/System"
+import ReimbursementPage from "@/pages/Reimbursement"
+import ReimbursementDetail from "@/pages/ReimbursementDetail"
 
 
 interface PrivateRoutesProps { }
@@ -34,6 +36,8 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/attendance/import/:importId' element={<AttendanceImportDetail />} />
             <Route path='/organization' element={<OrganizationPage />} />
             <Route path='/leave_category' element={<LeaveCategoryPage />} />
+            <Route path='/reimbursement' element={<ReimbursementPage />} />
+            <Route path='/reimbursement/:reimbursementId' element={<ReimbursementDetail />} />
             <Route path='/pay_roll' element={<PayRollPage />} />
             <Route path='/pay_roll/:payRollId' element={<PayRollDetail />} />
             <Route path='/leave' element={<LeavePage />} />

@@ -56,6 +56,7 @@ export interface PayRollItem {
 }
 export interface PayRollItemReq {
   pay_roll_id: string
+  reimbursement_id?: string
   item_type: string
   title: string
   notes: string

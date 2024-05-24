@@ -9,6 +9,9 @@ export interface Setting {
     pay_roll_asset_account_id: string | null
     pay_roll_tax_account_id: string | null
     pay_roll_cost_account_id: string | null
+    reimbursement_payable_account_id: string | null
+    reimbursement_expense_account_id: string | null
+    reimbursement_asset_account_id: string | null
     is_effective_rate_average: boolean
     is_gross_up: boolean
     bpjs_kes: boolean
@@ -29,6 +32,9 @@ export interface SettingReq {
     pay_roll_asset_account_id?: string | null
     pay_roll_tax_account_id?: string | null
     pay_roll_cost_account_id?: string | null
+    reimbursement_payable_account_id?: string | null
+    reimbursement_expense_account_id?: string | null
+    reimbursement_asset_account_id?: string | null
     is_effective_rate_average: boolean
     is_gross_up: boolean
     bpjs_kes: boolean

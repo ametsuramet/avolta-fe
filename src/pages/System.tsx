@@ -32,6 +32,10 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const [selectedPayRollCostAccount, setSelectedPayRollCostAccount] = useState("")
     const [setting, setSetting] = useState<Setting | null>(null);
     const [autoNumber, setAutoNumber] = useState("");
+
+    const [selectedReimbursementPayableAccount, setSelectedReimbursementPayableAccount] = useState("")
+    const [selectedReimbursementExpenseAccount, setSelectedReimbursementExpenseAccount] = useState("")
+    const [selectedReimbursementAssetAccount, setSelectedReimbursementAssetAccount] = useState("")
     useEffect(() => {
 
         asyncLocalStorage.getItem(TOKEN)
@@ -117,6 +121,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
             setSelectedPayRollAssetAccount(setting?.pay_roll_asset_account_id ?? "")
             setSelectedPayRollTaxAccount(setting?.pay_roll_tax_account_id ?? "")
             setSelectedPayRollCostAccount(setting?.pay_roll_cost_account_id ?? "")
+            setSelectedReimbursementPayableAccount(setting?.reimbursement_payable_account_id ?? "")
+            setSelectedReimbursementExpenseAccount(setting?.reimbursement_expense_account_id ?? "")
+            setSelectedReimbursementAssetAccount(setting?.reimbursement_asset_account_id ?? "")
         }
     }, [setting, payRollPayableAccounts, payRollExpenseAccounts, payRollAssetAccounts, payRollTaxAccounts]);
 
@@ -134,6 +141,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                 pay_roll_asset_account_id: selectedPayRollAssetAccount != "" ? selectedPayRollAssetAccount : null,
                 pay_roll_tax_account_id: selectedPayRollTaxAccount != "" ? selectedPayRollTaxAccount : null,
                 pay_roll_cost_account_id: selectedPayRollCostAccount != "" ? selectedPayRollCostAccount : null,
+                reimbursement_payable_account_id: selectedReimbursementPayableAccount != "" ? selectedReimbursementPayableAccount : null,
+                reimbursement_expense_account_id: selectedReimbursementExpenseAccount != "" ? selectedReimbursementExpenseAccount : null,
+                reimbursement_asset_account_id: selectedReimbursementAssetAccount != "" ? selectedReimbursementAssetAccount : null,
                 bpjs_kes: setting?.bpjs_kes ?? false,
                 bpjs_tk_jht: setting?.bpjs_tk_jht ?? false,
                 bpjs_tk_jkm: setting?.bpjs_tk_jkm ?? false,
@@ -153,7 +163,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
 
 
-    return ( setting &&
+    return (setting &&
         <DashboardLayout permission='menu_system'>
             <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
                 <div className='flex justify-between'>
@@ -186,7 +196,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
                             }} checked={setting!.bpjs_kes} />
                         </InlineForm>
-                        <InlineForm title="BPJS Ketenagakerjaan JHT" style={{ marginBottom: 15 }}  hints='Jaminan Hari Tua'>
+                        <InlineForm title="BPJS Ketenagakerjaan JHT" style={{ marginBottom: 15 }} hints='Jaminan Hari Tua'>
                             <Toggle onChange={(checked) => {
                                 setSetting({
                                     ...setting!,
@@ -195,7 +205,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
                             }} checked={setting!.bpjs_tk_jht} />
                         </InlineForm>
-                        <InlineForm title="BPJS Ketenagakerjaan JKK" style={{ marginBottom: 15 }}  hints='Jaminan Keselamatan Kerja'>
+                        <InlineForm title="BPJS Ketenagakerjaan JKK" style={{ marginBottom: 15 }} hints='Jaminan Keselamatan Kerja'>
                             <Toggle onChange={(checked) => {
                                 setSetting({
                                     ...setting!,
@@ -204,7 +214,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
                             }} checked={setting!.bpjs_tk_jkk} />
                         </InlineForm>
-                        <InlineForm title="BPJS Ketenagakerjaan JP" style={{ marginBottom: 15 }}  hints='Jaminan Pensiun'>
+                        <InlineForm title="BPJS Ketenagakerjaan JP" style={{ marginBottom: 15 }} hints='Jaminan Pensiun'>
                             <Toggle onChange={(checked) => {
                                 setSetting({
                                     ...setting!,
@@ -213,7 +223,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
                             }} checked={setting!.bpjs_tk_jp} />
                         </InlineForm>
-                        <InlineForm title="BPJS Ketenagakerjaan JKM" style={{ marginBottom: 15 }}  hints='Jaminan Kematian'>
+                        <InlineForm title="BPJS Ketenagakerjaan JKM" style={{ marginBottom: 15 }} hints='Jaminan Kematian'>
                             <Toggle onChange={(checked) => {
                                 setSetting({
                                     ...setting!,
@@ -316,6 +326,21 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                             update()
                         }} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
                     </Panel>
+                    <Panel header="Reimbursement" bordered>
+                        <InlineForm title="Akun Hutang Reimbursement">
+                            <SelectPicker searchable={true} data={payRollPayableAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedReimbursementPayableAccount} onSelect={(val) => setSelectedReimbursementPayableAccount(val)} block />
+                        </InlineForm>
+                        <InlineForm title="Akun Pengeluaran">
+                            <SelectPicker searchable={true} data={payRollExpenseAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedReimbursementExpenseAccount} onSelect={(val) => setSelectedReimbursementExpenseAccount(val)} block />
+                        </InlineForm>
+                        <InlineForm title="Akun Kas">
+                            <SelectPicker searchable={true} data={payRollAssetAccounts.map(e => ({ value: e.id, label: e.name }))} value={selectedReimbursementAssetAccount} onSelect={(val) => setSelectedReimbursementAssetAccount(val)} block />
+                        </InlineForm>
+                        <Button className='mt-8' onClick={async () => {
+                            update()
+                        }} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
+                    </Panel>
+
                 </div>
             </div>
         </DashboardLayout>

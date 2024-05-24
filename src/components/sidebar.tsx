@@ -9,7 +9,7 @@ import { BsPersonVcard } from 'react-icons/bs';
 import { HiOutlineHome } from 'react-icons/hi';
 import { TbHome, TbUser, TbUserCircle } from 'react-icons/tb';
 import { LuBarChartBig, LuBuilding2, LuCalendarClock, LuCalendarDays, LuContact, LuHome, LuLineChart, LuUserCircle, LuUserCircle2, LuWallet2 } from 'react-icons/lu';
-import { BiEnvelopeOpen } from 'react-icons/bi';
+import { BiEnvelopeOpen, BiMoneyWithdraw } from 'react-icons/bi';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Profile } from '@/model/auth';
 import { getStorageProfile } from '@/utils/helper';
@@ -83,6 +83,9 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					</Nav.Item>
 					<Nav.Item onClick={() => nav('/leave')} eventKey="/leave" icon={<LuCalendarDays className='rs-icon' />}>
 						Cuti
+					</Nav.Item>
+					<Nav.Item onClick={() => nav('/reimbursement')} eventKey="/reimbursement" icon={<BiMoneyWithdraw className='rs-icon' />}>
+						Reimbursement
 					</Nav.Item>
 					<Nav.Item onClick={() => nav('/pay_roll')} eventKey="/pay_roll" icon={<LuWallet2 className='rs-icon' />}>
 						Payroll

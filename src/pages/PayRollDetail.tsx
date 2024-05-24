@@ -5,6 +5,7 @@ import { Attendance, AttendanceReq } from '@/model/attendance';
 import { Employee } from '@/model/employee';
 import { Leave } from '@/model/leave';
 import { PayRoll, PayRollItem, PayRollItemReq } from '@/model/pay_roll';
+import { Reimbursement } from '@/model/reimbursement';
 import { Schedule } from '@/model/schedule';
 import { LoadingContext } from '@/objects/loading_context';
 import { addAttendance, deleteAttendance, editAttendance, getAttendances } from '@/repositories/attendance';
@@ -12,6 +13,7 @@ import { getEmployeeDetail } from '@/repositories/employee';
 import { getLeaves } from '@/repositories/leave';
 import { editPayRoll, getPayRollDetail, processPayRoll } from '@/repositories/pay_roll';
 import { addPayRollItem, deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
+import { getReimbursements } from '@/repositories/reimbursement';
 import { getRoleDetail } from '@/repositories/role';
 import { confirmDelete, countOverTime, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/16/solid';
@@ -51,6 +53,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [modalIncome, setModalIncome] = useState(false);
     const [modalExpense, setModalExpense] = useState(false);
     const [inputItem, setInputItem] = useState<PayRollItemReq | null>(null);
+    const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
 
     useEffect(() => {
         getDetail()
@@ -76,6 +79,10 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
             setTimeout(() => {
                 setMountedInput(true)
             }, 60);
+
+            getReimbursements({ page: 1, limit: 100 }, { employeeID: payRoll?.employee_id, status: "REQUEST" })
+                .then(v => v.json())
+                .then(v => setReimbursements(v.data))
         }
     }, [payRoll]);
 
@@ -461,8 +468,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                         </td>
                                         <td></td>
                                     </tr>
-                                    {payRoll?.costs.filter(e => !e.debt_deposit).map(e =>  <tr key={e.id}>
-                                        <td scope="col" className={`px-6 py-3  text-sm`} colSpan={2}>{e.description}{` (${money(e.tariff *100)}%)`}</td>
+                                    {payRoll?.costs.filter(e => !e.debt_deposit).map(e => <tr key={e.id}>
+                                        <td scope="col" className={`px-6 py-3  text-sm`} colSpan={2}>{e.description}{` (${money(e.tariff * 100)}%)`}</td>
                                         <td scope="col" className={`px-6 py-3 text-right`}>
                                             {money(e.amount, 0)}
                                         </td>
@@ -642,7 +649,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         </div>
 
                         <div className=' overflow-auto'>
-                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={["","","","text-right"]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
+                            <CustomTable headers={["No", "Keterangan", "Kategori", "Jumlah"]} headerClasses={["", "", "", "text-right"]} datasets={(payRoll?.transactions ?? []).filter(e => !e.is_expense).map(e => ({
                                 cells: [
                                     { data: payRoll!.transactions!.filter(e => !e.is_expense).indexOf(e) + 1 },
                                     { data: e.description },
@@ -847,6 +854,21 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         }}
                         block placeholder="Pilih Tipe" data={[{ value: "SALARY", label: "Gaji/Upah" }, { value: "ALLOWANCE", label: "Tunjangan" }, { value: "OVERTIME", label: "Lembur" }, { value: "REIMBURSEMENT", label: "Reimbursement" }]}></SelectPicker>
                 </InlineForm>
+                {inputItem?.item_type == "REIMBURSEMENT" &&
+                    <InlineForm title="Reimbursement">
+                        <SelectPicker value={inputItem?.reimbursement_id!}
+                            onSelect={(val) => {
+                                
+                                setInputItem({
+                                    ...inputItem!,
+                                    reimbursement_id: val,
+                                    amount: reimbursements.find(e => e.id == `${val}`)?.total ?? 0,
+                                    title: reimbursements.find(e => e.id == `${val}`)?.name ?? "",
+                                })
+                            }}
+                            block placeholder="Pilih Reimbursement" data={reimbursements.map(e => ({value: e.id, label: `${e.name} - ${money(e.total)}`}))}></SelectPicker>
+                    </InlineForm>
+                }
                 <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
                     <input placeholder='ex: Tunjangan Pendidikan ....' value={inputItem?.title} onChange={(el) => setInputItem({
                         ...inputItem!,
