@@ -12,6 +12,8 @@ export const getShops = async (pagination: PaginationReq) => {
     if (pagination.search && pagination.search != "") {
         params["search"] = pagination.search
     }
+
+
     return await customFetch(`admin/shop?${new URLSearchParams(params)}`)
 
 } 

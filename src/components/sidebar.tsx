@@ -43,6 +43,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/product":
 			case "/shop":
 			case "/product_category":
+			case "/sale":
 				return "/sales"
 
 			default:
@@ -102,6 +103,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 						<Nav.Item onClick={() => nav('/product')} eventKey="/product" >Produk</Nav.Item>
 						<Nav.Item onClick={() => nav('/product_category')} eventKey="/product_category" >Kategori</Nav.Item>
 						<Nav.Item onClick={() => nav('/shop')} eventKey="/shop" >Toko</Nav.Item>
+						<Nav.Item onClick={() => nav('/sale')} eventKey="/sale" >Penjualan</Nav.Item>
 					</Nav.Menu>
 					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/schedule')} eventKey="/schedule" >Jadwal</Nav.Item>
