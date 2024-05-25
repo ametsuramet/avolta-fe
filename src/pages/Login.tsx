@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 interface LoginProps { }
 
 const Login: FC<LoginProps> = ({ }) => {
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fcmToken, setFcmToken] = useState("");
@@ -36,14 +36,14 @@ const Login: FC<LoginProps> = ({ }) => {
                      onClick={async() =>{
                         try {
                             setIsLoading(true)
-                            var loginRes = await login({ email, password, fcmToken, device })
-                            var loginResJson = await loginRes.json()
+                            const loginRes = await login({ email, password, fcmToken, device })
+                            const loginResJson = await loginRes.json()
                             await asyncSetStorage({token: loginResJson.token, permissions: [], profile: null})
 
-                            var profileRes = await getProfile()
-                            var profileResJson = await profileRes.json()
-                            let permissions = profileResJson.data.permissions as string[]
-                            let profile = profileResJson.data as Profile[]
+                            const profileRes = await getProfile()
+                            const profileResJson = await profileRes.json()
+                            const permissions = profileResJson.data.permissions as string[]
+                            const profile = profileResJson.data as Profile[]
                             await asyncSetStorage({token: loginResJson.token, permissions, profile})
                             location.href = "/"
                         } catch (error) {

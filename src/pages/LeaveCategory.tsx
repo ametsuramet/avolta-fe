@@ -23,7 +23,7 @@ const LeaveCategoryPage: FC<LeaveCategoryPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [leaveCategories, setLeaveCategories] = useState<LeaveCategory[]>([]);
     const [selectedLeaveCategory, setSelectedLeaveCategory] = useState<LeaveCategory | null>(null);
     const [name, setName] = useState("");

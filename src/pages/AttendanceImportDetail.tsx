@@ -16,7 +16,7 @@ interface AttendanceImportDetailProps { }
 
 const AttendanceImportDetail: FC<AttendanceImportDetailProps> = ({ }) => {
     const [mounted, setMounted] = useState(false);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [data, setData] = useState<AttendanceBulkImport | null>(null);
     const nav = useNavigate()
     const [isApproved, setIsApproved] = useState(false);
@@ -40,8 +40,8 @@ const AttendanceImportDetail: FC<AttendanceImportDetailProps> = ({ }) => {
     const getDetail = async () => {
         try {
             setIsLoading(true)
-            var resp = await getAttendanceImportDetail(importId!)
-            var respJson = await resp.json()
+            const resp = await getAttendanceImportDetail(importId!)
+            const respJson = await resp.json()
             setData(respJson.data)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')

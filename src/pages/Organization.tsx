@@ -24,7 +24,7 @@ const OrganizationPage: FC<OrganizationPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [selOrganizations, setSelOrganizations] = useState<Organization[]>([]);
     const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
@@ -104,7 +104,7 @@ const OrganizationPage: FC<OrganizationPageProps> = ({ }) => {
                     //     console.log(createUpdateDataFunction(mappingData(organizations)))
                     //   }}
                     onSelectItem={(val) => {
-                        let item = val.data as Organization
+                        const item = val.data as Organization
                         setSelectedOrganization(item)
                         setName(item.name)
                         setSelectedParentOrg(item.parent_id ?? "")
@@ -122,7 +122,7 @@ const OrganizationPage: FC<OrganizationPageProps> = ({ }) => {
                                         className=" h-3 w-3 text-green-600 hover:text-green-800 ml-2"
                                         aria-hidden="true"
                                         onClick={() => {
-                                            let item = node.data as Organization
+                                            const item = node.data as Organization
                                             setSelectedOrganization(null)
                                             setSelectedParentOrg(item.id)
                                         }}
@@ -132,7 +132,7 @@ const OrganizationPage: FC<OrganizationPageProps> = ({ }) => {
                                         className=" h-3 w-3 text-red-400 hover:text-red-600 ml-2"
                                         aria-hidden="true"
                                         onClick={() => {
-                                            let item = node.data as Organization
+                                            const item = node.data as Organization
                                             confirmDelete(() => {
                                                 deleteOrganization(item.id).then(v => getAllOrganizations())
                                             })

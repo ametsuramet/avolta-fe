@@ -33,7 +33,7 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [payRolls, setPayRolls] = useState<PayRoll[]>([]);
     const [selectedPayRoll, setSelectedPayRoll] = useState<PayRoll | null>(null);
     const [title, setTitle] = useState("");
@@ -87,7 +87,7 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
             if (selectedPayRoll) {
                 // await editPayRoll(selectedPayRoll!.id, { name, description })
             } else {
-                var resp = await addPayRoll({
+                const resp = await addPayRoll({
                     pay_roll_number: payRollNumber,
                     title,
                     notes,
@@ -97,7 +97,7 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
                     is_gross_up: settting?.is_gross_up ?? false,
                     is_effective_rate_average: settting?.is_effective_rate_average ?? false,
                 })
-                var respJson = await resp.json()
+                const respJson = await resp.json()
                 nav(`/pay_roll/${respJson.data.last_id}`)
             }
             getAllPayRolls()

@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 interface SystemPageProps { }
 
 const SystemPage: FC<SystemPageProps> = ({ }) => {
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
 
     const [token, setToken] = useState("");
     const [payRollPayableAccounts, setPayRollPayableAccounts] = useState<Account[]>([])
@@ -53,8 +53,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const getPayRollPayableAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Liability", isTax: false })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Liability", isTax: false })
+            const respJson = await resp.json()
             setPayRollPayableAccounts(respJson.data)
         } catch (error) {
 
@@ -65,8 +65,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const getPayRollExpenseAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Expense", cashflowGroup: "operating" })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Expense", cashflowGroup: "operating" })
+            const respJson = await resp.json()
             setPayRollExpenseAccounts(respJson.data)
         } catch (error) {
 
@@ -77,8 +77,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const getPayRollAssetAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
+            const respJson = await resp.json()
             setPayRollAssetAccounts(respJson.data)
         } catch (error) {
 
@@ -89,8 +89,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const getPayRollTaxAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Liability", isTax: true })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Liability", isTax: true })
+            const respJson = await resp.json()
             setPayRollTaxAccounts(respJson.data)
         } catch (error) {
 
@@ -104,8 +104,8 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
             getAutoNumber()
                 .then(v => v.json())
                 .then(v => setAutoNumber(v.data))
-            let resp = await getSettingDetail()
-            var respJson = await resp.json()
+            const resp = await getSettingDetail()
+            const respJson = await resp.json()
             setSetting(respJson.data)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -129,7 +129,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
     const update = async () => {
         try {
-            let resp = await editSetting({
+            const resp = await editSetting({
                 pay_roll_auto_number: setting?.pay_roll_auto_number ?? false,
                 is_effective_rate_average: setting?.is_effective_rate_average ?? false,
                 is_gross_up: setting?.is_gross_up ?? false,

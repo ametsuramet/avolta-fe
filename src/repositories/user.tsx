@@ -4,7 +4,7 @@ import { customFetch } from "@/utils/helper";
 
 
 export const getUsers = async (pagination: PaginationReq) => {
-    var params: Record<string, string> = {
+    const params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
 

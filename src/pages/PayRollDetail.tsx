@@ -39,8 +39,8 @@ interface PayRollDetailProps { }
 
 const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const nav = useNavigate()
-    let { payRollId } = useParams()
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { payRollId } = useParams()
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [payRoll, setPayRoll] = useState<PayRoll | null>(null);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
     const [detailExpanded, setDetailExpanded] = useState(true);
@@ -78,8 +78,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const getAllSetting = async () => {
         try {
 
-            let resp = await getSettingDetail()
-            var respJson = await resp.json()
+            const resp = await getSettingDetail()
+            const respJson = await resp.json()
             setSelectedAssetAccount(respJson.data.pay_roll_asset_account_id)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -91,8 +91,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const getlAssetAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
+            const respJson = await resp.json()
             setAssetAccounts(respJson.data)
         } catch (error) {
 
@@ -104,7 +104,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     useEffect(() => {
         if (transactionPayment) {
             setDescription(`Pembayaran ${transactionPayment.description}`)
-            let totalPaid = transactionPayment.transaction_refs.map(e => e.debit).reduce((a, b) => a + b, 0)
+            const totalPaid = transactionPayment.transaction_refs.map(e => e.debit).reduce((a, b) => a + b, 0)
             setPaid(totalPaid)
             setAmount(transactionPayment.credit - totalPaid)
         }
@@ -161,16 +161,16 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
     useEffect(() => {
         if (payRoll) {
-            let firstDay = moment(payRoll.start_date).startOf('month').date()
-            let endDay = moment(payRoll.end_date).endOf('month').date()
-            let ranges = []
+            const firstDay = moment(payRoll.start_date).startOf('month').date()
+            const endDay = moment(payRoll.end_date).endOf('month').date()
+            const ranges = []
             let totalDays = 0
             let totalHours = 0
             let totalOvertime = 0
             for (let index = firstDay; index <= endDay; index++) {
-                let day = moment(payRoll.start_date).startOf('month').add(index - 1, 'day')
+                const day = moment(payRoll.start_date).startOf('month').add(index - 1, 'day')
                 ranges.push(day)
-                let att = getAttendancesFromRange(day)
+                const att = getAttendancesFromRange(day)
                 for (const a of att) {
                     if (a.clock_out && a.clock_in)
                         totalHours += (moment(a.clock_out).diff(moment(a.clock_in), "minutes"))
@@ -191,8 +191,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const getDetail = async () => {
         try {
             setIsLoading(true)
-            let resp = await getPayRollDetail(payRollId!)
-            let respJson = await resp.json()
+            const resp = await getPayRollDetail(payRollId!)
+            const respJson = await resp.json()
             setPayRoll(respJson.data)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -207,7 +207,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
     const countPercentage = (from: number, to: number) => {
         if (to == 0) return null
-        let percent = from / to * 100
+        const percent = from / to * 100
         if (percent < 50) return <Badge content={`${money(percent)} %`} />
         if (percent >= 50 && percent < 70) return <Badge color='orange' content={`${money(percent)} %`} />
         return <Badge color='green' content={`${money(percent)} %`} />
@@ -802,14 +802,14 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
 
                                 try {
                                     setIsLoading(true)
-                                    var resp = await getAttendances({ page: 1, limit: 1000 }, {
+                                    const resp = await getAttendances({ page: 1, limit: 1000 }, {
                                         dateRange: [moment(payRoll?.start_date).toDate(), moment(payRoll?.end_date + " 23:59:59").toDate()],
                                         employeeIDs: payRoll?.employee_id,
 
                                         download: true
                                     })
-                                    let filename = resp.headers.get("Content-Description")
-                                    var respBlob = await resp.blob()
+                                    const filename = resp.headers.get("Content-Description")
+                                    const respBlob = await resp.blob()
 
                                     saveAs(respBlob, filename ?? "download.xlsx")
 
@@ -829,7 +829,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         <CustomTable className=''
 
                             headers={["No", "Tgl", "Jam Masuk", "Jam Keluar", "Durasi", "Overtime", ""]} headerClasses={["w-8"]} datasets={dateAttendanceRanges.map(e => {
-                                let selAtt = getAttendancesFromRange(e)
+                                const selAtt = getAttendancesFromRange(e)
                                 return ({
                                     cells: [{ data: dateAttendanceRanges.indexOf(e) + 1, className: 'w-8' },
                                     {
@@ -842,7 +842,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                         data: <div className='flex flex-col'>
                                             {selAtt.map(a => (<div className='mb-4' key={a.id}>
                                                 <input disabled={!editable} className='w-24' id={`clockin-${a.id}`} type="time" defaultValue={moment(a.clock_in).format("HH:mm")} onBlur={(el) => {
-                                                    var att = moment(moment(`${a.clock_in}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
+                                                    const att = moment(moment(`${a.clock_in}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
                                                     if (att) {
                                                         updateAttendance(a.id, {
                                                             clock_in: att
@@ -855,7 +855,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 }} />
                                             </div>))}
                                             {selAtt.length == 0 && <input disabled={!editable} className='w-24' id={`new-clockin-${e.toISOString()}`} type="time" defaultValue={undefined} onBlur={(el) => {
-                                                var att = moment(moment(`${e}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
+                                                const att = moment(moment(`${e}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
                                                 if (att) {
                                                     newAttendance({
                                                         clock_in: att,
@@ -872,7 +872,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                         data: <div className='flex flex-col'>
                                             {selAtt.map(a => (<div className='mb-4' key={a.id}>
                                                 <input disabled={!editable} className='w-24' id={`clockout-${a.id}`} type="time" defaultValue={!a.clock_out ? "" : moment(a.clock_out).format("HH:mm")} onBlur={(el) => {
-                                                    var att = moment(moment(`${e}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
+                                                    const att = moment(moment(`${e}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
                                                     // if (!a.clock_out) {
                                                     //     att = moment(moment(`${e}`).format(`YYYY-MM-DD`) + " " + el.target.value).toISOString()
                                                     // }

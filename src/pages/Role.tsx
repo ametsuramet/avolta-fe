@@ -23,7 +23,7 @@ const RolePage: FC<RolePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [leaveCategories, setRoles] = useState<Role[]>([]);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [name, setName] = useState("");
@@ -42,7 +42,7 @@ const RolePage: FC<RolePageProps> = ({ }) => {
     }, []);
 
     useEffect(() => {
-        let grouped = groupedPermissions(allPermissions)
+        const grouped = groupedPermissions(allPermissions)
         // console.log(grouped)
         setGroupeds(grouped)
     }, [allPermissions]);

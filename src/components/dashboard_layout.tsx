@@ -17,7 +17,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: FC<DashboardLayoutProps> = ({ children, noPadding, permission }) => {
     const [permissions, setPermissions] = useState<string[]>([]);
     const { isExpanded, setExpanded } = useContext(ExpandMenuContext)
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
 
 
 

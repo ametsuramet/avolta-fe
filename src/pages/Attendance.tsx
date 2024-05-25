@@ -38,7 +38,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [openWithHeader, setOpenWithHeader] = useState(false)
@@ -85,7 +85,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     const getAllAttendance = async () => {
         try {
             setIsLoading(true)
-            let r = await getAttendances({ page, limit, search }, {
+            const r = await getAttendances({ page, limit, search }, {
                 dateRange: dateRange,
                 jobTitleID: inputJobTitleID,
                 gender: inputGender,
@@ -94,7 +94,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 orderBy,
 
             })
-            let rJson = await r.json()
+            const rJson = await r.json()
             setAttendances(rJson.data)
             setPagination(rJson.pagination)
         } catch (error) {
@@ -247,15 +247,15 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
 
                         try {
                             setIsLoading(true)
-                            var resp = await getAttendances({ page, limit, search }, {
+                            const resp = await getAttendances({ page, limit, search }, {
                                 dateRange: dateRange,
                                 jobTitleID: inputJobTitleID,
                                 employeeIDs: selectedEmployee?.map(e => e.value).join(","),
                                 gender: inputGender,
                                 download: true
                             })
-                            let filename = resp.headers.get("Content-Description")
-                            var respBlob = await resp.blob()
+                            const filename = resp.headers.get("Content-Description")
+                            const respBlob = await resp.blob()
 
                             saveAs(respBlob, filename ?? "download.xlsx")
                             getAllAttendance()

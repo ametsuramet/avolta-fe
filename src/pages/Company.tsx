@@ -17,7 +17,7 @@ interface CompanyPageProps { }
 
 const CompanyPage: FC<CompanyPageProps> = ({ }) => {
     const [company, setCompany] = useState<Company | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [editable, setEditable] = useState(false);
 
 
@@ -44,8 +44,8 @@ const CompanyPage: FC<CompanyPageProps> = ({ }) => {
 
     const getDetail = async () => {
         try {
-            let resp = await getCompanyDetail()
-            var respJson = await resp.json()
+            const resp = await getCompanyDetail()
+            const respJson = await resp.json()
             setCompany(respJson.data)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -71,7 +71,7 @@ const CompanyPage: FC<CompanyPageProps> = ({ }) => {
 
     const update = async () => {
         try {
-            let resp = await editCompany({
+            const resp = await editCompany({
                 ...company!,
                 name,
                 logo,
@@ -85,7 +85,7 @@ const CompanyPage: FC<CompanyPageProps> = ({ }) => {
                 contact_person_position: contactPersonPosition,
                 tax_payer_number: taxPayerNumber,
             })
-            var respJson = await resp.json()
+            const respJson = await resp.json()
             setCompany(respJson.data)
             successToast("Perusahaan berhasil diupdate")
         } catch (error) {

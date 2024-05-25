@@ -85,7 +85,7 @@ const CustomTable: FC<CustomTableProps> = ({
                 <thead className="text-base text-gray-700 font-semibold " style={{ backgroundColor: "#F2F4F5" }}>
                     <tr>
                         {headers.map(e => {
-                            let index = headers.indexOf(e)
+                            const index = headers.indexOf(e)
                             let className = ""
                             if (headerClasses[index] != undefined) {
                                 className = headerClasses[index]

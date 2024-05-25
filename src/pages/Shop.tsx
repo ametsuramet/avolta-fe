@@ -23,7 +23,7 @@ const ShopPage: FC<ShopPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [jobTitles, setShops] = useState<Shop[]>([]);
     const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
     const [name, setName] = useState("");

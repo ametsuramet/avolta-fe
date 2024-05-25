@@ -23,7 +23,7 @@ const ProductCategoryPage: FC<ProductCategoryPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [jobTitles, setProductCategories] = useState<ProductCategory[]>([]);
     const [selectedProductCategory, setSelectedProductCategory] = useState<ProductCategory | null>(null);
     const [name, setName] = useState("");

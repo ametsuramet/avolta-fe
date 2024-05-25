@@ -5,7 +5,7 @@ import { customFetch } from "@/utils/helper"
 
 
 export const getProducts = async (pagination: PaginationReq, filter?: ProductFilter) => {
-    var params: Record<string, string> = {
+    const params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
 

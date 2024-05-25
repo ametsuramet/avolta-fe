@@ -4,18 +4,18 @@ import { customFetch } from "@/utils/helper";
 import moment from "moment";
 import { DateRange } from "rsuite/esm/DateRangePicker";
 
-export let deleteAccount = async (uuid: string) => {
+export const deleteAccount = async (uuid: string) => {
     return await customFetch(`admin/account${uuid}`, {
         method: "DELETE",
     })
 }
 
-export let getAccountDetail = async (uuid: string) => {
+export const getAccountDetail = async (uuid: string) => {
     return await customFetch(`admin/account${uuid}`)
 
 }
-export let getAccounts = async (pagination: PaginationReq, filter?: AccountFilter) => {
-    var params: Record<string, string> = {
+export const getAccounts = async (pagination: PaginationReq, filter?: AccountFilter) => {
+    const params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
 

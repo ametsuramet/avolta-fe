@@ -21,7 +21,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 	const [activeKey, setActiveKey] = useState('1');
 	const { isExpanded, setExpanded } = useContext(ExpandMenuContext)
 	const [profile, setProfile] = useState<Profile | null>(null);
-	let location = useLocation();
+	const location = useLocation();
 	const nav = useNavigate()
 
 	useEffect(() => {

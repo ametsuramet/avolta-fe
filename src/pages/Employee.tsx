@@ -34,7 +34,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [openWithHeader, setOpenWithHeader] = useState(false)
@@ -74,14 +74,14 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
     const getAllEmployee = async () => {
         try {
             setIsLoading(true)
-            let r = await getEmployees({ page, limit, search }, {
+            const r = await getEmployees({ page, limit, search }, {
                 ageRange: inputAge != null ? [moment().subtract(inputAge, "years").toDate(), moment().subtract(inputAge + 1, "years").toDate()] : null,
                 jobTitleID: inputJobTitleID,
                 gender: inputGender,
                 startedWork: dateRange != null ? dateRange[0] : date,
                 startedWorkEnd: dateRange != null ? dateRange[1] : null,
             })
-            let rJson = await r.json()
+            const rJson = await r.json()
             setEmployees(rJson.data)
             setPagination(rJson.pagination)
         } catch (error) {
@@ -213,7 +213,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
 
                         try {
                             setIsLoading(true)
-                            var resp = await getEmployees({ page, limit, search }, {
+                            const resp = await getEmployees({ page, limit, search }, {
                                 ageRange: inputAge != null ? [moment().subtract(inputAge, "years").toDate(), moment().subtract(inputAge + 1, "years").toDate()] : null,
                                 jobTitleID: inputJobTitleID,
                                 gender: inputGender,
@@ -221,8 +221,8 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                                 startedWorkEnd: dateRange != null ? dateRange[1] : null,
                                 download: true
                             })
-                            let filename = resp.headers.get("Content-Description")
-                            var respBlob = await resp.blob()
+                            const filename = resp.headers.get("Content-Description")
+                            const respBlob = await resp.blob()
 
                             saveAs(respBlob, filename ?? "download.xlsx")
                             getAllEmployee()

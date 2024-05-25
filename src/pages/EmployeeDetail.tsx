@@ -37,7 +37,7 @@ interface EmployeeDetailProps { }
 
 const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const [mounted, setMounted] = useState(false);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const { employeeId } = useParams()
     const [employee, setEmployee] = useState<Employee | null>(null);
     const [editable, setEditable] = useState(false);
@@ -102,8 +102,8 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const getDetail = async () => {
         try {
             setIsLoading(true)
-            var resp = await getEmployeeDetail(employeeId!)
-            var respJson = await resp.json()
+            const resp = await getEmployeeDetail(employeeId!)
+            const respJson = await resp.json()
             setEmployee(respJson.data)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -115,11 +115,11 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const getEmployeAttendances = async () => {
         try {
             setIsLoading(true)
-            var resp = await getAttendances({ page, limit }, {
+            const resp = await getAttendances({ page, limit }, {
                 employeeID: employeeId,
                 dateRange
             })
-            var respJson = await resp.json()
+            const respJson = await resp.json()
             setAttendances(respJson.data)
             setPagination(respJson.pagination)
         } catch (error) {
@@ -509,14 +509,14 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
 
                             try {
                                 setIsLoading(true)
-                                var resp = await getAttendances({ page, limit }, {
+                                const resp = await getAttendances({ page, limit }, {
                                     dateRange: dateRange,
                                     employeeIDs: employeeId,
 
                                     download: true
                                 })
-                                let filename = resp.headers.get("Content-Description")
-                                var respBlob = await resp.blob()
+                                const filename = resp.headers.get("Content-Description")
+                                const respBlob = await resp.blob()
 
                                 saveAs(respBlob, filename ?? "download.xlsx")
 

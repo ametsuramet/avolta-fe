@@ -19,7 +19,7 @@ import CurrencyInput from 'react-currency-input-field';
 import { BsFloppy2, BsFunnel } from 'react-icons/bs';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
-import { Button, Drawer, Modal, SelectPicker, Uploader } from 'rsuite';
+import { Button, DatePicker, Drawer, Modal, SelectPicker, Uploader } from 'rsuite';
 import { ItemDataType } from 'rsuite/esm/MultiCascadeTree';
 import Swal from 'sweetalert2';
 import { Employee } from '@/model/employee';
@@ -29,6 +29,8 @@ import DateRangePicker, { DateRange } from 'rsuite/esm/DateRangePicker';
 import moment from 'moment';
 import { getEmployees } from '@/repositories/employee';
 import { getShops } from '@/repositories/shop';
+import { getProducts } from '@/repositories/product';
+import { Product } from '@/model/product';
 
 interface SalePageProps { }
 
@@ -39,9 +41,10 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [sales, setSales] = useState<Sale[]>([]);
     const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [shops, setShops] = useState<Shop[]>([]);
     const [mounted, setMounted] = useState(false);
@@ -52,12 +55,16 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     const [sellingPrice, setSellingPrice] = useState(0)
     const [saleCategory, setProductCategory] = useState<ItemDataType<ProductCategory> | string | null>(null)
     const [selectedProductCategory, setSelectedProductCategory] = useState<ItemDataType<ProductCategory> | string | null>(null)
+    const [selectedProduct, setSelectedProduct] = useState<ItemDataType<Product> | string | null>(null)
     const [selectedEmployee, setSelectedEmployee] = useState<ItemDataType<Employee> | string | null>(null)
     const [selectedShop, setSelectedShop] = useState<ItemDataType<Shop> | string | null>(null)
     const [modalOpen, setmodalOpen] = useState(false);
     const [openWithHeader, setOpenWithHeader] = useState(false);
     const [dateRange, setDateRange] = useState<DateRange | null>([moment().subtract(1, 'months').toDate(), moment().add(1, "days").toDate()]);
+    const [date, setDate] = useState<Date>(moment().add(1, "days").toDate());
     const [token, setToken] = useState("");
+    const [openSaleForm, setOpenSaleForm] = useState(false);
+    const [qty, setQty] = useState(0);
     useEffect(() => {
         setMounted(true)
         asyncLocalStorage.getItem(TOKEN)
@@ -68,6 +75,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         if (!mounted) return
 
         getAllProductCategories("")
+        getAllProducts("")
         getAllEmployees("")
         getAllShops("")
     }, [mounted]);
@@ -80,6 +88,11 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         getProductCategories({ page: 1, limit: 5, search: s })
             .then(v => v.json())
             .then(v => setProductCategories(v.data))
+    }
+    const getAllProducts = async (s: string) => {
+        getProducts({ page: 1, limit: 5, search: s })
+            .then(v => v.json())
+            .then(v => setProducts(v.data))
     }
     const getAllEmployees = async (s: string) => {
         getEmployees({ page: 1, limit: 5, search: s })
@@ -94,13 +107,13 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     const getAllSale = async () => {
         try {
             setIsLoading(true)
-            let resp = await getSales({ page, limit, search }, {
+            const resp = await getSales({ page, limit, search }, {
                 product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null,
                 employee_id: selectedEmployee ? `${selectedEmployee}` : null,
                 shop_id: selectedShop ? `${selectedShop}` : null,
                 dateRange,
             })
-            let respJson = await resp.json()
+            const respJson = await resp.json()
             setSales(respJson.data)
             setPagination(respJson.pagination)
 
@@ -169,7 +182,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                 onSearch={(val) => setSearch(val)}
                 searchHeader={
                     <div>
-                        <Button className='mr-2' onClick={() => setmodalOpen(true)}><PlusIcon className='w-4 mr-1' /> Tambah Penjualan</Button>
+                        <Button className='mr-2' onClick={() => setOpenSaleForm(true)}><PlusIcon className='w-4 mr-1' /> Tambah Penjualan</Button>
                         <Button onClick={() => setOpenWithHeader(true)}><FunnelIcon className='w-4 mr-1' /> Filter</Button>
                     </div>
                 }
@@ -212,51 +225,29 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                 }))} />
         </div>
 
-        <Modal open={modalOpen} onClose={() => {
-            setmodalOpen(false)
-        }}>
-            <Modal.Header>
-                {selectedSale ? "Edit Produk" : "Tambah Produk"}
-            </Modal.Header>
-            <Modal.Body>
-                <InlineForm title="Nama Produk">
-                    <input type="text" className='form-control' value={name} onChange={(el) => setName(el.target.value)} />
+
+
+        <Drawer open={openSaleForm} onClose={() => setOpenSaleForm(false)}>
+            <Drawer.Header>
+                <Drawer.Title>Form Penjualan</Drawer.Title>
+            </Drawer.Header>
+            <Drawer.Body className='p-8'>
+                <InlineForm title="Tanggal">
+                    <DatePicker className='w-full' value={date} onChange={(val) => setDate(val!)} placement="bottomEnd" format='dd/MM/yyyy' />
                 </InlineForm>
-
-                <InlineForm title="Kategori">
-                    <SelectPicker<ItemDataType<ProductCategory> | string>
-
+                <InlineForm title="Produk">
+                    <SelectPicker<ItemDataType<Product> | string>
                         labelKey="name"
-                        onClean={() => setProductCategory(null)}
+                        onClean={() => setSelectedProduct(null)}
                         valueKey="id"
-                        onSearch={(val) => getAllProductCategories(val)}
-                        placeholder="Kategori" searchable={true} data={productCategories} value={saleCategory} onSelect={(val) => setProductCategory(val)} block />
-                </InlineForm>
-                <InlineForm title="SKU">
-                    <input type="text" className='form-control' value={sku} onChange={(el) => setSku(el.target.value)} />
-                </InlineForm>
-                <InlineForm title="Barcode">
-                    <input type="text" className='form-control' value={barcode} onChange={(el) => setBarcode(el.target.value)} />
-                </InlineForm>
-                <InlineForm title="Harga">
-                    <CurrencyInput
-                        className='form-control'
-                        groupSeparator="."
-                        decimalSeparator=","
-                        value={sellingPrice}
-                        onValueChange={(value, _, values) => {
-                            setSellingPrice(values?.float ?? 0)
+                        onSearch={(val) => {
+                            if (val)
+                                getAllProductCategories(val)
                         }}
-
-                    />
+                        placeholder="Produk" searchable={true} data={products} value={selectedProduct} onSelect={(val) => setSelectedProduct(val)} block />
                 </InlineForm>
-
-            </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={create} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
-            </Modal.Footer>
-        </Modal>
-
+            </Drawer.Body>
+        </Drawer>
         <Drawer open={openWithHeader} onClose={() => setOpenWithHeader(false)}>
             <Drawer.Header>
                 <Drawer.Title>Filter & Tool</Drawer.Title>
@@ -286,7 +277,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                         valueKey="id"
                         onSearch={(val) => {
                             if (val)
-                            getAllProductCategories(val)
+                                getAllProductCategories(val)
                         }}
                         placeholder="Kategori" searchable={true} data={productCategories} value={selectedProductCategory} onSelect={(val) => setSelectedProductCategory(val)} block />
                 </InlineForm>
@@ -297,7 +288,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                         valueKey="id"
                         onSearch={(val) => {
                             if (val)
-                            getAllEmployees(val)
+                                getAllEmployees(val)
                         }}
                         placeholder="Salesman" searchable={true} data={employees} value={selectedEmployee} onSelect={(val) => setSelectedEmployee(val)} block />
                 </InlineForm>
@@ -308,7 +299,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                         valueKey="id"
                         onSearch={(val) => {
                             if (val)
-                            getAllShops(val)
+                                getAllShops(val)
                         }}
                         placeholder="Toko" searchable={true} data={shops} value={selectedShop} onSelect={(val) => setSelectedShop(val)} block />
                 </InlineForm>
@@ -317,9 +308,9 @@ const SalePage: FC<SalePageProps> = ({ }) => {
 
                     try {
                         setIsLoading(true)
-                        var resp = await getSales({ page, limit, search }, { download: true, product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null })
-                        let filename = resp.headers.get("Content-Description")
-                        var respBlob = await resp.blob()
+                        const resp = await getSales({ page, limit, search }, { download: true, product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null })
+                        const filename = resp.headers.get("Content-Description")
+                        const respBlob = await resp.blob()
 
                         saveAs(respBlob, filename ?? "download.xlsx")
                         // getAllSale()

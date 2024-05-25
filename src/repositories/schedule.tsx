@@ -5,7 +5,7 @@ import moment from "moment";
 
 
 export const getSchedules = async (pagination: PaginationReq, filter?: ScheduleFilter) => {
-    var params: Record<string, string> = {
+    const params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
 

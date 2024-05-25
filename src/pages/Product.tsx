@@ -32,7 +32,7 @@ const ProductPage: FC<ProductPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [products, setProducts] = useState<Product[]>([]);
     const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
     const [mounted, setMounted] = useState(false);
@@ -70,8 +70,8 @@ const ProductPage: FC<ProductPageProps> = ({ }) => {
     const getAllProducts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getProducts({ page, limit, search }, {product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null})
-            let respJson = await resp.json()
+            const resp = await getProducts({ page, limit, search }, {product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null})
+            const respJson = await resp.json()
             setProducts(respJson.data)
             setPagination(respJson.pagination)
 
@@ -260,9 +260,9 @@ const ProductPage: FC<ProductPageProps> = ({ }) => {
 
                     try {
                         setIsLoading(true)
-                        var resp = await getProducts({ page, limit, search }, {download: true, product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null})
-                        let filename = resp.headers.get("Content-Description")
-                        var respBlob = await resp.blob()
+                        const resp = await getProducts({ page, limit, search }, {download: true, product_category_id: selectedProductCategory ? `${selectedProductCategory}` : null})
+                        const filename = resp.headers.get("Content-Description")
+                        const respBlob = await resp.blob()
 
                         saveAs(respBlob, filename ?? "download.xlsx")
                         // getAllProducts()

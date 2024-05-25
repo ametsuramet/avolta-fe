@@ -8,7 +8,7 @@ interface AppRouteProps { }
 
 export const AppRoute: FC<AppRouteProps> = ({ }) => {
 
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     return (<BrowserRouter>
         <Routes>
                 {token

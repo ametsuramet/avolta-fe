@@ -5,7 +5,7 @@ import moment from "moment";
 
 
 export const getAttendances = async  (pagination: PaginationReq, filter?: AttendanceFilter) => {
-    var params: Record<string, string> = {
+    const params: Record<string, string> = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
 

@@ -31,7 +31,7 @@ interface ReimbursementDetailProps { }
 
 const ReimbursementDetail: FC<ReimbursementDetailProps> = ({ }) => {
     const [mounted, setMounted] = useState(false);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const { reimbursementId } = useParams()
     const [reimbursement, setReimbursement] = useState<Reimbursement | null>(null);
     const [editable, setEditable] = useState(false);
@@ -60,8 +60,8 @@ const ReimbursementDetail: FC<ReimbursementDetailProps> = ({ }) => {
     const getAllSetting = async () => {
         try {
 
-            let resp = await getSettingDetail()
-            var respJson = await resp.json()
+            const resp = await getSettingDetail()
+            const respJson = await resp.json()
             setSelectedReimbursementAssetAccount(respJson.data.reimbursement_asset_account_id)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
@@ -74,8 +74,8 @@ const ReimbursementDetail: FC<ReimbursementDetailProps> = ({ }) => {
     const getAssetAccounts = async () => {
         try {
             setIsLoading(true)
-            let resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
-            let respJson = await resp.json()
+            const resp = await getAccounts({ page: 1, limit: 20 }, { type: "Asset", cashflowSubgroup: "cash_bank" })
+            const respJson = await resp.json()
             setAssetAccounts(respJson.data)
         } catch (error) {
 
@@ -88,8 +88,8 @@ const ReimbursementDetail: FC<ReimbursementDetailProps> = ({ }) => {
     const getDetail = async () => {
         try {
             setIsLoading(true)
-            var resp = await getReimbursementDetail(reimbursementId!)
-            var respJson = await resp.json()
+            const resp = await getReimbursementDetail(reimbursementId!)
+            const respJson = await resp.json()
             setReimbursement(respJson.data)
 
         } catch (error) {

@@ -29,7 +29,7 @@ const ReimbursementPage: FC<ReimbursementPageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
     const [selectedReimbursement, setSelectedReimbursement] = useState<Reimbursement | null>(null);
     const [name, setName] = useState("");
@@ -79,12 +79,12 @@ const ReimbursementPage: FC<ReimbursementPageProps> = ({ }) => {
                     employee_id: ''
                 })
             } else {
-                var resp = await addReimbursement({
+                const resp = await addReimbursement({
                     name: `Reimbursement ${selectedEmployee?.label} - ${moment(date).format("DD/MM/YYYY")}`,
                     date: date.toISOString(),
                     employee_id: selectedEmployee?.value!
                 })
-                var respJson = await resp.json()
+                const respJson = await resp.json()
                 nav(`/reimbursement/${respJson.data.last_id}`)
             }
             getAllReimbursements()

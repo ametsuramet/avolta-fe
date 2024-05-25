@@ -23,7 +23,7 @@ const JobTitlePage: FC<JobTitlePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitle | null>(null);
     const [name, setName] = useState("");

@@ -30,7 +30,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    let { isLoading, setIsLoading } = useContext(LoadingContext);
+    const { isLoading, setIsLoading } = useContext(LoadingContext);
     const [detailExpanded, setDetailExpanded] = useState(true);
     const [dateRange, setDateRange] = useState<DateRange>([moment().startOf('month').toDate(), moment().endOf('month').toDate()]);
     const [selectedDateRange, setSelectedDateRange] = useState<DateRange>([moment().startOf('month').toDate(), moment().endOf('month').toDate()]);
@@ -87,8 +87,8 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
     const getAllSchedules = async () => {
         try {
             setIsLoading(true)
-            var resp = await getSchedules({ page, limit, search })
-            var respJson = await resp.json()
+            const resp = await getSchedules({ page, limit, search })
+            const respJson = await resp.json()
             setSchedules(respJson.data)
             setPagination(respJson.pagination)
         } catch (error) {
@@ -107,20 +107,20 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
         getSchedules({ page: 1, limit: 1000 }, { dateRange })
             .then(v => v.json())
             .then(v => {
-                let schedules: Schedule[] = [...v.data as Schedule[]]
+                const schedules: Schedule[] = [...v.data as Schedule[]]
                 let weeklySchedules = [...schedules.filter(e => e.schedule_type == "WEEKLY")]
-                let singleSchedules = [...schedules.filter(e => e.schedule_type == "SINGLE_DATE")]
-                let dateRangeSchedules = [...schedules.filter(e => e.schedule_type == "DATERANGE")]
+                const singleSchedules = [...schedules.filter(e => e.schedule_type == "SINGLE_DATE")]
+                const dateRangeSchedules = [...schedules.filter(e => e.schedule_type == "DATERANGE")]
                 // console.log("weeklySchedules", weeklySchedules)
-                let now = moment(dateRange[0])
-                let firstDay = now.clone().startOf('month').date()
-                let endDay = now.clone().endOf('month').date()
-                let i = 1
+                const now = moment(dateRange[0])
+                const firstDay = now.clone().startOf('month').date()
+                const endDay = now.clone().endOf('month').date()
+                const i = 1
                 let days: { date: Date, schedules: Schedule[] }[] = []
                 for (let index = firstDay; index <= endDay; index++) {
                     let selectedSchedules: Schedule[] = []
-                    let day = now.clone().startOf('month').add(index - 1, 'day')
-                    let weekDay = day.format("dddd").toLowerCase()
+                    const day = now.clone().startOf('month').add(index - 1, 'day')
+                    const weekDay = day.format("dddd").toLowerCase()
 
                     selectedSchedules = [
                         ...selectedSchedules,
@@ -136,7 +136,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
                 }
                 weeklySchedules = [...weeklySchedules.map(e => {
-                    let week_days: string[] = []
+                    const week_days: string[] = []
                     if (e.sunday) week_days.push("sunday")
                     if (e.monday) week_days.push("monday")
                     if (e.tuesday) week_days.push("tuesday")
@@ -150,12 +150,12 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
                 // console.log(weeklySchedules)
                 for (let index = firstDay; index <= endDay; index++) {
-                    let day = now.clone().startOf('month').add(index - 1, 'day')
-                    let sel = dateRangeSchedules.filter(e => (e.start_date) == day.format("YYYY-MM-DD"))
+                    const day = now.clone().startOf('month').add(index - 1, 'day')
+                    const sel = dateRangeSchedules.filter(e => (e.start_date) == day.format("YYYY-MM-DD"))
                     if (sel.length) {
                         for (const s of sel) {
                             for (let index = moment(s.start_date).date(); index <= moment(s.end_date).date(); index++) {
-                                let selDate = new Date(moment(s.start_date).year(), moment(s.start_date).month(), index)
+                                const selDate = new Date(moment(s.start_date).year(), moment(s.start_date).month(), index)
                                 days = days.map(e => {
                                     if (moment(e.date).format("YYYY-MM-DD") == moment(selDate).format("YYYY-MM-DD")) {
                                         // console.log(moment(e.date).format("YYYY-MM-DD"))
@@ -173,7 +173,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
 
                 days = days.map(e => {
-                    let selWeekDay = weeklySchedules.filter(w => w.week_days.includes(moment(e.date).locale("en").format("dddd").toLowerCase()))
+                    const selWeekDay = weeklySchedules.filter(w => w.week_days.includes(moment(e.date).locale("en").format("dddd").toLowerCase()))
                     for (const s of selWeekDay) {
                         if (s.week_days.includes(moment(e.date).locale("en").format("dddd").toLowerCase())) {
                             e.schedules.push(s)
@@ -192,9 +192,9 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
 
 
     const renderCell = (date: Date) => {
-        let selected = monthSchedules.find(e => moment(e.date).format("YYYY-MM-DD") == moment(date).format("YYYY-MM-DD"))
+        const selected = monthSchedules.find(e => moment(e.date).format("YYYY-MM-DD") == moment(date).format("YYYY-MM-DD"))
         if (selected) {
-            let employees: Employee[] = []
+            const employees: Employee[] = []
             for (const iterator of selected.schedules.map(e => e.employees)) {
                 employees.push(...iterator)
             }
@@ -314,7 +314,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                 {
                                     data: <div className='flex justify-between'>
                                         <input id={`name-${e.id}`} className='w-full mr-4' type="text" value={e.name} onChange={(v) => {
-                                            let sel = schedules.map(s => {
+                                            const sel = schedules.map(s => {
                                                 if (s.id == e.id) {
                                                     s.name = v.target.value
                                                 }
@@ -322,7 +322,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                             })
                                             setSchedules(sel)
                                         }} onBlur={(v) => {
-                                            let sel = schedules.find(s => s.id == e.id)
+                                            const sel = schedules.find(s => s.id == e.id)
 
                                             editSchedule(e.id, {
                                                 name: sel!.name,
@@ -330,7 +330,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                             })
                                         }} onKeyUp={(val) => {
                                             if (val.key == "Enter") {
-                                                let sel = schedules.find(s => s.id == e.id)
+                                                const sel = schedules.find(s => s.id == e.id)
                                                 editSchedule(e.id, {
                                                     name: sel!.name,
                                                     schedule_type: sel!.schedule_type,
@@ -361,7 +361,7 @@ const SchedulePage: FC<SchedulePageProps> = ({ }) => {
                                         <EyeIcon onClick={() => {
                                             setSelectedSchedule(e)
                                             setSelectedType({ value: e.schedule_type, label: scheduleType.find(s => s.value == e.schedule_type)!.label })
-                                            let daysWeekSelected: SelectOption[] = []
+                                            const daysWeekSelected: SelectOption[] = []
                                             if (e.sunday) daysWeekSelected.push({ value: "SUNDAY", label: "Minggu" })
                                             if (e.monday) daysWeekSelected.push({ value: "MONDAY", label: "Senin" })
                                             if (e.tuesday) daysWeekSelected.push({ value: "TUESDAY", label: "Selasa" })
