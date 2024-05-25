@@ -62,6 +62,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     const [gender, setGender] = useState("");
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [selectedEmployee, setselectedEmployee] = useState<MultiValue<SelectOption>>();
+    const [orderBy, setOrderBy] = useState("clock_in desc")
 
     useEffect(() => {
         getAllJobTitles("")
@@ -73,7 +74,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
     useEffect(() => {
         getAllAttendance()
 
-    }, [page, limit, search, date, dateRange, inputGender, inputAge, inputJobTitleID, selectedEmployee]);
+    }, [page, limit, search, date, dateRange, inputGender, inputAge, inputJobTitleID, selectedEmployee, orderBy]);
 
     const getAllJobTitles = async (s: string) => {
         getJobTitles({ page: 1, limit: 5, search: s })
@@ -89,7 +90,8 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 jobTitleID: inputJobTitleID,
                 gender: inputGender,
                 download: false,
-                employeeIDs: selectedEmployee?.map(e => e.value).join(",")
+                employeeIDs: selectedEmployee?.map(e => e.value).join(","),
+                orderBy,
 
             })
             let rJson = await r.json()
@@ -184,7 +186,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                                     <small><Moment format='HH:mm'>{e.clock_in}</Moment></small>
                                 </div>
                             }, {
-                                data: <div className='flex flex-col'>
+                                data: e.clock_out && <div className='flex flex-col'>
                                     <Moment format='DD MMM YYYY'>{e.clock_out}</Moment>
                                     <small><Moment format='HH:mm'>{e.clock_out}</Moment></small>
                                 </div>
@@ -237,6 +239,10 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                     <InlineForm title="Rentang Tanggal">
                         <DateRangePicker className='w-full' value={dateRange} onChange={(val) => setDateRange(val)} placement="bottomEnd" format='dd/MM/yyyy' />
                     </InlineForm>
+                    <InlineForm title="Urutkan">
+                    <SelectPicker placeholder="Urutkan" searchable={false} data={[{value: 'clock_in asc', label: 'Tgl Awal - Akhir'}, {value: 'clock_in desc', label: 'Tgl Akhir - Awal'}]} value={orderBy} onSelect={(val) => setOrderBy(val)} block />
+
+                    </InlineForm>
                     <Button onClick={async () => {
 
                         try {
@@ -288,132 +294,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
                 </Drawer.Body>
             </Drawer>
 
-            {/* <Modal size={"lg"} open={open} onClose={() => setOpen(false)}>
-                <Modal.Header>
-                    <Modal.Title>Form Karyawan</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <InlineForm title={'Nama Depan'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"Nama Depan"}
-                            value={firstName}
-                            onChange={(el) => setFirstName(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title={'Nama Tengah'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"Nama Tengah"}
-                            value={middleName}
-                            onChange={(el) => setMiddleName(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title={'Nama Belakang'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"Nama Belakang"}
-                            value={lastName}
-                            onChange={(el) => setLastName(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title="Tgl Lahir">
-                        <DatePicker className='w-full' value={dateBirth} onChange={(val) => setDateBirth(val)} format='dd/MM/yyyy' />
-                    </InlineForm>
-                    <InlineForm title="Tgl Masuk">
-                        <DatePicker className='w-full' value={dateStarted} onChange={(val) => setDateStarted(val)} format='dd/MM/yyyy' />
-                    </InlineForm>
-                    <InlineForm title="Jenis Kelamin">
-                        <SelectPicker placeholder="Jenis Kelamin" searchable={false} data={[{ value: "m", label: "Laki-laki" }, { value: "f", label: "Perempuan" }]} value={gender} onSelect={(val) => setGender(val)} block />
-                    </InlineForm>
-                    <InlineForm title={'Email'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"Email"}
-                            value={email}
-                            onChange={(el) => setEmail(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title={'Telp'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"Telepon"}
-                            value={phone}
-                            onChange={(el) => setPhone(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title={'Alamat'} style={{ alignItems: 'start' }}>
-                        <textarea
-                            className="form-control"
-                            rows={5}
-                            placeholder={"Alamat"}
-                            value={address}
-                            onChange={(el) => setAddress(el.target.value)}
-                        />
-                    </InlineForm>
-
-                    <InlineForm title={'NIP/NIK'}>
-                        <input
-                            className="form-control"
-                            type="text"
-                            placeholder={"NIP/NIK"}
-                            value={attendanceIdentityNumber}
-                            onChange={(el) => setAttendanceIdentityNumber(el.target.value)}
-                        />
-                    </InlineForm>
-                    <InlineForm title={'Jabatan'}>
-                        <SelectPicker placeholder="Jabatan" searchable={false} data={jobTitles.map(e => ({ value: e.id, label: e.name }))} value={jobTitleID} onSelect={(val) => setJobTitleID(val)} block />
-                    </InlineForm>
-
-
-
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={() => {
-                        setOpen(false)
-                    }} appearance="subtle">
-                        Cancel
-                    </Button>
-                    <Button onClick={async () => {
-                        try {
-                            setIsLoading(true)
-                            // await addAttendance({
-                            //     email: email,
-                            //     full_name: getFullName(firstName, middleName, lastName),
-                            //     phone: phone,
-                            //     job_title_id: setNullString(jobTitleID),
-                            //     address: address,
-                            //     attendance_identity_number: attendanceIdentityNumber,
-                            //     basic_salary: 0,
-                            //     positional_allowance: 0,
-                            //     transport_allowance: 0,
-                            //     meal_allowance: 0,
-                            //     non_taxable_income_level_code: '',
-                            //     tax_payer_number: '',
-                            //     gender: gender,
-                            //     date_of_birth: setNullTime(dateBirth ? dateBirth!.toISOString() : null),
-                            //     started_work: setNullTime(dateStarted ? dateStarted!.toISOString() : null),
-                            // })
-                            getAllAttendance()
-                            setOpen(false)
-                            clearForm()
-                        } catch (error) {
-                            Swal.fire(`Perhatian`, `${error}`, 'error')
-                        } finally {
-                            setIsLoading(false)
-
-                        }
-                    }} appearance="primary">
-                        <PiFloppyDiskFill className='mr-2' /> Simpan
-                    </Button>
-                </Modal.Footer>
-            </Modal> */}
+       
         </DashboardLayout>
     );
 }

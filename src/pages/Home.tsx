@@ -14,11 +14,13 @@ import { getEmployees } from '@/repositories/employee';
 import { getAttendances } from '@/repositories/attendance';
 import { Attendance } from '@/model/attendance';
 import Moment from 'react-moment';
+import { useNavigate } from 'react-router-dom';
 
 
 interface HomeProps { }
 
 const Home: FC<HomeProps> = ({ }) => {
+    const nav = useNavigate()
     const [attendances, setAttendances] = useState<Attendance[]>([]);
 
     useEffect(() => {
@@ -123,7 +125,7 @@ const Home: FC<HomeProps> = ({ }) => {
                     <div className=' bg-white rounded-xl p-4 hover:shadow-lg'>
                         <div className='flex justify-between mb-4'>
                             <h3 className='font-bold text-black text-lg'>{"Kehadiran"}</h3>
-                            <Button className=' rounded-xl bg-blue-700' color="blue" appearance="primary">
+                            <Button className=' rounded-xl bg-blue-700' onClick={() => nav('/attendance')} appearance="primary">
                                 Lihat Semua
                             </Button>
                         </div>

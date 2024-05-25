@@ -538,28 +538,27 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Tgl", "Jam Masuk", "Jam Keluar", "Durasi", "Overtime"]} headerClasses={[]} datasets={attendances.map(e => ({
+                    headers={["No", "Tgl", "Absensi", "Durasi", "Overtime", "Keterangan"]} headerClasses={["", "", "", "", "", "w-64"]} datasets={attendances.map(e => ({
                         cells: [{ data: attendances.indexOf(e) + 1 },
                         { data: <Moment format='DD MMM YYYY'>{e.clock_in}</Moment> }, {
-                            data: <div className='flex flex-col'>
+                            data: <div className='flex '>
 
                                 <Moment format='HH:mm'>{e.clock_in}</Moment>
-                            </div>
-                        }, {
-                            data: <div className='flex flex-col'>
                                 {e.clock_out &&
-                                    <Moment format='HH:mm'>{e.clock_out}</Moment>
+                                    <span>{' '}{' ~ '}<Moment format='HH:mm'>{e.clock_out}</Moment></span>
                                 }
+
+
                             </div>
                         },
                         {
-                            data: 
+                            data:
                                 e.clock_out &&
-                            <div>
-                                {numberToDuration(moment(e.clock_out).diff(moment(e.clock_in), 'minutes'))}
-                            </div>
+                                <div>
+                                    {numberToDuration(moment(e.clock_out).diff(moment(e.clock_in), 'minutes'))}
+                                </div>
 
-                            
+
                         },
                         {
                             data: e.overtime &&
@@ -567,6 +566,37 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                     {`${countOverTime(e)}`}
                                 </div>
                         },
+                        {
+                            data:
+                                <div>
+                                    <div>
+                                        <p className='font-bold'>Masuk :</p>
+                                        <div>
+                                            {e.clock_in_picture &&
+                                                <Avatar size='lg' src={e.clock_in_picture} alt={employee?.full_name} />
+                                            }
+                                        </div>
+                                        <a className=' hover:font-bold' href={`https://www.google.com/maps/place/${e.clock_in_lat},${e.clock_in_lng}`} target='_blank'>
+                                            <p>{e.clock_in_notes}</p>
+                                        </a>
+                                    </div>
+                                    {e.clock_out &&
+                                        <div>
+                                            <p className='font-bold'>Keluar :</p>
+                                            <div>
+                                                {e.clock_out_picture &&
+                                                    <Avatar size='lg' src={e.clock_out_picture} alt={employee?.full_name} />
+                                                }
+                                            </div>
+                                            <a className=' hover:font-bold' href={`https://www.google.com/maps/place/${e.clock_out_lat},${e.clock_out_lng}`} target='_blank'>
+                                                <p>{e.clock_out_notes}</p>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                        },
+
+
                         ], className: "hover:bg-gray-50 border-b last:border-b-0"
                     }))} />
             </div>

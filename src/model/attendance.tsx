@@ -44,4 +44,5 @@ export interface Attendance {
     employeeID?: string | null
     download?: boolean  | null
     gender?: string | null
+    orderBy?: string | null
   }

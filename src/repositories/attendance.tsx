@@ -1,6 +1,7 @@
 import { AttendanceFilter, AttendanceReq } from "@/model/attendance";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
+import moment from "moment";
 
 
 export const getAttendances = async  (pagination: PaginationReq, filter?: AttendanceFilter) => {
@@ -16,7 +17,7 @@ export const getAttendances = async  (pagination: PaginationReq, filter?: Attend
        
         if (filter.dateRange) {
             params["start_date"] = filter.dateRange[0].toISOString()
-            params["end_date"] = filter.dateRange[1].toISOString()
+            params["end_date"] = moment(filter.dateRange[1]).add(1, 'days').toISOString()
         }
         if (filter.jobTitleID) {
             params["job_title_id"] = filter.jobTitleID
@@ -29,6 +30,9 @@ export const getAttendances = async  (pagination: PaginationReq, filter?: Attend
         }
         if (filter.gender) {
             params["gender"] = filter.gender
+        }
+        if (filter.orderBy) {
+            params["order_by"] = filter.orderBy
         }
         
         if (filter.download) {
