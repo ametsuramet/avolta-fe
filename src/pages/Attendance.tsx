@@ -272,7 +272,7 @@ const AttendancePage: FC<AttendancePageProps> = ({ }) => {
 
                     <hr className='h-line' />
                     <h3 className=' text-2xl text-black'>Unggah Data Absensi</h3>
-                    <p className='mb-4'>Silakan download terlebih dahulu templat data karyawan</p>
+                    <p className='mb-4'>Silakan download terlebih dahulu templat data absensi</p>
                     <Uploader
                         onSuccess={async (resp) => {
                             Swal.fire("Perhatian", "Unggah File Berhasil", "success")

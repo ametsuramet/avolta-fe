@@ -30,7 +30,7 @@ const ReimbursementPage: FC<ReimbursementPageProps> = ({ }) => {
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     let { isLoading, setIsLoading } = useContext(LoadingContext);
-    const [jobTitles, setReimbursements] = useState<Reimbursement[]>([]);
+    const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
     const [selectedReimbursement, setSelectedReimbursement] = useState<Reimbursement | null>(null);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -113,9 +113,9 @@ const ReimbursementPage: FC<ReimbursementPageProps> = ({ }) => {
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Tgl", "Reimbursement", "Status", ""]} headerClasses={[]} datasets={jobTitles.map(e => ({
+                    headers={["No", "Tgl", "Reimbursement", "Status", ""]} headerClasses={[]} datasets={reimbursements.map(e => ({
                         cells: [
-                            { data: ((page - 1) * limit) + (jobTitles.indexOf(e) + 1) },
+                            { data: ((page - 1) * limit) + (reimbursements.indexOf(e) + 1) },
                             { data: e.date },
                             { data: e.name },
                             {

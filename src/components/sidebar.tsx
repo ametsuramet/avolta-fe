@@ -8,7 +8,7 @@ import { ExpandMenuContext } from '@/objects/expand_menu';
 import { BsPersonVcard } from 'react-icons/bs';
 import { HiOutlineHome } from 'react-icons/hi';
 import { TbHome, TbUser, TbUserCircle } from 'react-icons/tb';
-import { LuBarChartBig, LuBuilding2, LuCalendarClock, LuCalendarDays, LuContact, LuHome, LuLineChart, LuUserCircle, LuUserCircle2, LuWallet2 } from 'react-icons/lu';
+import { LuBarChartBig, LuBuilding2, LuCalendarClock, LuCalendarDays, LuContact, LuHome, LuLineChart, LuShoppingCart, LuUserCircle, LuUserCircle2, LuWallet2 } from 'react-icons/lu';
 import { BiEnvelopeOpen, BiMoneyWithdraw } from 'react-icons/bi';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Profile } from '@/model/auth';
@@ -40,11 +40,15 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/company":
 			case "/system":
 				return "/setting"
-		
+			case "/product":
+			case "/shop":
+			case "/product_category":
+				return "/sales"
+
 			default:
 				return location.pathname
 		}
-		
+
 	}
 
 	return (<div style={{ width: isExpanded ? 240 : 56 }} className='bg-white' >
@@ -75,7 +79,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item eventKey="/" onClick={() => nav('/')} icon={<LuHome className='rs-icon' />}>
 						Dashboard
 					</Nav.Item>
-					<Nav.Item onClick={() => nav('/employee')}  eventKey="/employee" icon={<LuContact className='rs-icon' />}>
+					<Nav.Item onClick={() => nav('/employee')} eventKey="/employee" icon={<LuContact className='rs-icon' />}>
 						Karyawan
 					</Nav.Item>
 					<Nav.Item onClick={() => nav('/attendance')} eventKey="/attendance" icon={<LuCalendarClock className='rs-icon' />}>
@@ -90,21 +94,26 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 					<Nav.Item onClick={() => nav('/pay_roll')} eventKey="/pay_roll" icon={<LuWallet2 className='rs-icon' />}>
 						Payroll
 					</Nav.Item>
-				
-					<Nav.Item eventKey="/report" icon={<LuBarChartBig className='rs-icon' />}>
+
+					{/* <Nav.Item eventKey="/report" icon={<LuBarChartBig className='rs-icon' />}>
 						Laporan
-					</Nav.Item>
-					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
-						<Nav.Item onClick={() => nav('/schedule')}  eventKey="/schedule" >Jadwal</Nav.Item>
-						<Nav.Item onClick={() => nav('/job_title')}  eventKey="/job_title">Posisi / Jabatan</Nav.Item>
-						<Nav.Item onClick={() => nav('/organization')}  eventKey="/organization">Organisasi</Nav.Item>
-						<Nav.Item onClick={() => nav('/leave_category')}  eventKey="/leave_category">Kategori Cuti</Nav.Item>
-						<Nav.Item onClick={() => nav('/role')}  eventKey="/role">Hak Akses</Nav.Item>
-						<Nav.Item onClick={() => nav('/user')}  eventKey="/user">Pengguna</Nav.Item>
-						<Nav.Item onClick={() => nav('/system')}  eventKey="/system">Sistem</Nav.Item>
-						<Nav.Item onClick={() => nav('/company')}  eventKey="/company">Perusahaan</Nav.Item>
+					</Nav.Item> */}
+					<Nav.Menu placement="rightStart" eventKey="/sales" title="Penjualan" icon={<LuShoppingCart className='rs-icon' />}>
+						<Nav.Item onClick={() => nav('/product')} eventKey="/product" >Produk</Nav.Item>
+						<Nav.Item onClick={() => nav('/product_category')} eventKey="/product_category" >Kategori</Nav.Item>
+						<Nav.Item onClick={() => nav('/shop')} eventKey="/shop" >Toko</Nav.Item>
 					</Nav.Menu>
-					
+					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
+						<Nav.Item onClick={() => nav('/schedule')} eventKey="/schedule" >Jadwal</Nav.Item>
+						<Nav.Item onClick={() => nav('/job_title')} eventKey="/job_title">Posisi / Jabatan</Nav.Item>
+						<Nav.Item onClick={() => nav('/organization')} eventKey="/organization">Organisasi</Nav.Item>
+						<Nav.Item onClick={() => nav('/leave_category')} eventKey="/leave_category">Kategori Cuti</Nav.Item>
+						<Nav.Item onClick={() => nav('/role')} eventKey="/role">Hak Akses</Nav.Item>
+						<Nav.Item onClick={() => nav('/user')} eventKey="/user">Pengguna</Nav.Item>
+						<Nav.Item onClick={() => nav('/system')} eventKey="/system">Sistem</Nav.Item>
+						<Nav.Item onClick={() => nav('/company')} eventKey="/company">Perusahaan</Nav.Item>
+					</Nav.Menu>
+
 				</Nav>
 			</Sidenav.Body>
 		</Sidenav>

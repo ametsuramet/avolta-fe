@@ -19,6 +19,9 @@ import CompanyPage from "@/pages/Company"
 import SystemPage from "@/pages/System"
 import ReimbursementPage from "@/pages/Reimbursement"
 import ReimbursementDetail from "@/pages/ReimbursementDetail"
+import ProductPage from "@/pages/Product"
+import ProductCategoryPage from "@/pages/ProductCategory"
+import ShopPage from "@/pages/Shop"
 
 
 interface PrivateRoutesProps { }
@@ -45,6 +48,9 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/user' element={<UserPage />} />
             <Route path='/company' element={<CompanyPage />} />
             <Route path='/system' element={<SystemPage />} />
+            <Route path='/product' element={<ProductPage />} />
+            <Route path='/product_category' element={<ProductCategoryPage />} />
+            <Route path='/shop' element={<ShopPage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     )
