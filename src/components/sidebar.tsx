@@ -39,11 +39,13 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/leave_category":
 			case "/company":
 			case "/system":
+			case "/setting/incentive":
 				return "/setting"
 			case "/product":
 			case "/shop":
 			case "/product_category":
 			case "/sale":
+			case "/incentive/report":
 				return "/sales"
 
 			default:
@@ -104,6 +106,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 						<Nav.Item onClick={() => nav('/product_category')} eventKey="/product_category" >Kategori</Nav.Item>
 						<Nav.Item onClick={() => nav('/shop')} eventKey="/shop" >Toko</Nav.Item>
 						<Nav.Item onClick={() => nav('/sale')} eventKey="/sale" >Penjualan</Nav.Item>
+						<Nav.Item onClick={() => nav('/incentive/report')} eventKey="/incentive/report" >Laporan Insentif</Nav.Item>
 					</Nav.Menu>
 					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/schedule')} eventKey="/schedule" >Jadwal</Nav.Item>
@@ -112,6 +115,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 						<Nav.Item onClick={() => nav('/leave_category')} eventKey="/leave_category">Kategori Cuti</Nav.Item>
 						<Nav.Item onClick={() => nav('/role')} eventKey="/role">Hak Akses</Nav.Item>
 						<Nav.Item onClick={() => nav('/user')} eventKey="/user">Pengguna</Nav.Item>
+						<Nav.Item onClick={() => nav('/setting/incentive')} eventKey="/setting/incentive">Insentif</Nav.Item>
 						<Nav.Item onClick={() => nav('/system')} eventKey="/system">Sistem</Nav.Item>
 						<Nav.Item onClick={() => nav('/company')} eventKey="/company">Perusahaan</Nav.Item>
 					</Nav.Menu>

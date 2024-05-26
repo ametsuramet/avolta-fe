@@ -25,3 +25,6 @@ export const getSettingDetail = async () => {
 export const getAutoNumber = async () => {
     return await customFetch(`admin/setting/autonumber`)
 }
+export const getIncentiveAutoNumber = async () => {
+    return await customFetch(`admin/setting/incentive/autonumber`)
+}

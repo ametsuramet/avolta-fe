@@ -97,7 +97,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
             .then(v => setProductCategories(v.data))
     }
     const getAllProducts = async (s: string) => {
-        getProducts({ page: 1, limit: 5, search: s })
+        getProducts({ page: 1, limit: 20, search: s })
             .then(v => v.json())
             .then(v => setProducts(v.data))
     }
@@ -189,7 +189,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
 
             getAllSale()
             clearForm()
-            setOpenSaleForm(false)
+            // setOpenSaleForm(false)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -215,6 +215,12 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         setSelectedInputEmployee(null)
         setSelectedInputShop(null)
         setSelectedProduct(null)
+        setTotal(0)
+        setDiscount(0)
+        setDiscountAmount(0)
+        setPrice(0)
+        setQty(1)
+        refreshInput()
     }
 
     const refreshInput = () => {
@@ -377,7 +383,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                     }
                 </InlineForm>
                 <InlineForm title="Total">
-                    <div className='px-4 text-right'>
+                    <div className='px-4 text-right font-bold text-xl'>
                         {money(total)}
                     </div>
                 </InlineForm>
@@ -489,7 +495,5 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     </DashboardLayout>);
 }
 export default SalePage;
-function adddProduct(arg0: { name: string; sku: string; barcode: string; selling_price: number; product_category_id: string; }) {
-    throw new Error('Function not implemented.');
-}
+
 

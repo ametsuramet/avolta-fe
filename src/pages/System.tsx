@@ -4,7 +4,7 @@ import { Account } from '@/model/account';
 import { Setting } from '@/model/setting';
 import { LoadingContext } from '@/objects/loading_context';
 import { getAccounts } from '@/repositories/account';
-import { editSetting, getAutoNumber, getSettingDetail } from '@/repositories/setting';
+import { editSetting, getAutoNumber, getIncentiveAutoNumber, getSettingDetail } from '@/repositories/setting';
 import { AUTO_NUMERIC_FORMAL, TOKEN } from '@/utils/constant';
 import { asyncLocalStorage } from '@/utils/helper';
 import { successToast } from '@/utils/helperUi';
@@ -32,6 +32,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const [selectedPayRollCostAccount, setSelectedPayRollCostAccount] = useState("")
     const [setting, setSetting] = useState<Setting | null>(null);
     const [autoNumber, setAutoNumber] = useState("");
+    const [incentiveAutoNumber, setIncentiveAutoNumber] = useState("");
 
     const [selectedReimbursementPayableAccount, setSelectedReimbursementPayableAccount] = useState("")
     const [selectedReimbursementExpenseAccount, setSelectedReimbursementExpenseAccount] = useState("")
@@ -104,6 +105,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
             getAutoNumber()
                 .then(v => v.json())
                 .then(v => setAutoNumber(v.data))
+            getIncentiveAutoNumber()
+                .then(v => v.json())
+                .then(v => setIncentiveAutoNumber(v.data))
             const resp = await getSettingDetail()
             const respJson = await resp.json()
             setSetting(respJson.data)
@@ -130,9 +134,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
     const update = async () => {
         try {
             const resp = await editSetting({
-                pay_roll_auto_number: setting?.pay_roll_auto_number ?? false,
                 is_effective_rate_average: setting?.is_effective_rate_average ?? false,
                 is_gross_up: setting?.is_gross_up ?? false,
+                pay_roll_auto_number: setting?.pay_roll_auto_number ?? false,
                 pay_roll_auto_format: setting?.pay_roll_auto_format ?? "",
                 pay_roll_static_character: setting?.pay_roll_static_character ?? "",
                 pay_roll_auto_number_character_length: setting?.pay_roll_auto_number_character_length ?? 5,
@@ -149,6 +153,10 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                 bpjs_tk_jkm: setting?.bpjs_tk_jkm ?? false,
                 bpjs_tk_jp: setting?.bpjs_tk_jp ?? false,
                 bpjs_tk_jkk: setting?.bpjs_tk_jkk ?? false,
+                incentive_auto_number: setting?.incentive_auto_number ?? false,
+                incentive_auto_format: setting?.incentive_auto_format ?? "",
+                incentive_static_character: setting?.incentive_static_character ?? "",
+                incentive_auto_number_character_length: setting?.incentive_auto_number_character_length ?? 5,
             })
             // setCompany(respJson.data)
             getAllSetting()
@@ -236,7 +244,7 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                             update()
                         }} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
                     </Panel>
-                    <Panel header="Auto Number" bordered>
+                    <Panel header="Pay Roll Auto Number" bordered>
                         <InlineForm title="Auto Number Aktif" style={{ marginBottom: 15 }} >
                             <Toggle onChange={(checked) => {
                                 setSetting({
@@ -321,6 +329,80 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
 
                             }} checked={setting?.is_gross_up} />
                         </InlineForm>
+
+                        <Button className='mt-8' onClick={async () => {
+                            update()
+                        }} appearance='primary'><BsFloppy2 className='mr-2' /> Simpan</Button>
+                    </Panel>
+                    <Panel header="Insentif Auto Number" bordered>
+                        <InlineForm title="Auto Number Aktif" style={{ marginBottom: 15 }} >
+                            <Toggle onChange={(checked) => {
+                                setSetting({
+                                    ...setting!,
+                                    incentive_auto_number: checked,
+                                })
+                            }} checked={setting?.incentive_auto_number} />
+                        </InlineForm>
+                        <InlineForm title={"Panjang Auto Number"}>
+                            <input
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                type="text"
+
+                                value={setting?.incentive_auto_number_character_length}
+                                onChange={(e) => {
+                                    // setAutoNumericLength(parseInt(e.target.value))
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_auto_number_character_length: parseInt(e.target.value),
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                        <InlineForm title={"Format Nomor"} style={{ alignItems: 'start' }}>
+                            <textarea
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                value={setting?.incentive_auto_format ?? ""}
+                                onChange={(e) => {
+                                    // setNumberFormat(e.target.value)
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_auto_format: e.target.value,
+                                    })
+                                }}
+                            />
+                            <TagGroup className='mt-2'>
+                                {AUTO_NUMERIC_FORMAL.map(e => <Tag onClick={() => {
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_auto_format: (setting?.incentive_auto_format ?? "") + e,
+                                    })
+
+                                }} style={{ marginTop: 5, marginLeft: 5, }} key={e} color={setting?.incentive_auto_format?.includes(e) ? 'green' : 'cyan'}>{e}</Tag>)}
+                            </TagGroup>
+                        </InlineForm>
+
+                        <InlineForm title={"Karakter Statis"}>
+                            <input
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                type="text"
+
+                                value={setting?.incentive_static_character ?? ""}
+                                onChange={(e) => {
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_static_character: e.target.value,
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                        <InlineForm title={"Auto Number"}>
+                            {incentiveAutoNumber}
+                        </InlineForm>
+
+
 
                         <Button className='mt-8' onClick={async () => {
                             update()

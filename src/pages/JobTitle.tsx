@@ -9,8 +9,6 @@ import { confirmDelete } from '@/utils/helper';
 import { EyeIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFloppy2 } from 'react-icons/bs';
-import { IoAddCircleOutline } from 'react-icons/io5';
-import { MdAddCircleOutline } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'rsuite';
 import Swal from 'sweetalert2';

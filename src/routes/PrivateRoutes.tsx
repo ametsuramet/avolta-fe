@@ -21,8 +21,11 @@ import ReimbursementPage from "@/pages/Reimbursement"
 import ReimbursementDetail from "@/pages/ReimbursementDetail"
 import ProductPage from "@/pages/Product"
 import ProductCategoryPage from "@/pages/ProductCategory"
-import ShopPage from "@/pages/Shop"
 import SalePage from "@/pages/Sale"
+import IncentiveSettingPage from "@/pages/IncentiveSetting"
+import IncentiveReportPage from "@/pages/IncentiveReport"
+import ShopPage from "@/pages/Shop"
+import IncentiveReportDetail from "@/pages/IncentiveReportDetail"
 
 
 interface PrivateRoutesProps { }
@@ -53,6 +56,9 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/product_category' element={<ProductCategoryPage />} />
             <Route path='/shop' element={<ShopPage />} />
             <Route path='/sale' element={<SalePage />} />
+            <Route path='/incentive/report' element={<IncentiveReportPage />} />
+            <Route path='/incentive/report/:incentiveReportId' element={<IncentiveReportDetail />} />
+            <Route path='/setting/incentive' element={<IncentiveSettingPage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     )

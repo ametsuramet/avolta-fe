@@ -540,7 +540,8 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                     changeLimit={(v) => setLimit(v)}
                     headers={["No", "Tgl", "Absensi", "Durasi", "Overtime", "Keterangan"]} headerClasses={["", "", "", "", "", "w-64"]} datasets={attendances.map(e => ({
                         cells: [{ data: attendances.indexOf(e) + 1 },
-                        { data: <Moment format='DD MMM YYYY'>{e.clock_in}</Moment> }, {
+                        { data: <Moment format='DD MMM YYYY'>{e.clock_in}</Moment> },
+                        {
                             data: <div className='flex '>
 
                                 <Moment format='HH:mm'>{e.clock_in}</Moment>
