@@ -29,7 +29,7 @@ import DateRangePicker, { DateRange } from 'rsuite/esm/DateRangePicker';
 import moment from 'moment';
 import { getEmployees } from '@/repositories/employee';
 import { getShops } from '@/repositories/shop';
-import { getProducts } from '@/repositories/product';
+import { getProductDetail, getProducts } from '@/repositories/product';
 import { Product } from '@/model/product';
 
 interface SalePageProps { }
@@ -57,6 +57,8 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     const [selectedProductCategory, setSelectedProductCategory] = useState<ItemDataType<ProductCategory> | string | null>(null)
     const [selectedProduct, setSelectedProduct] = useState<ItemDataType<Product> | string | null>(null)
     const [selectedEmployee, setSelectedEmployee] = useState<ItemDataType<Employee> | string | null>(null)
+    const [selectedInputEmployee, setSelectedInputEmployee] = useState<ItemDataType<Employee> | string | null>(null)
+    const [selectedInputShop, setSelectedInputShop] = useState<ItemDataType<Shop> | string | null>(null)
     const [selectedShop, setSelectedShop] = useState<ItemDataType<Shop> | string | null>(null)
     const [modalOpen, setmodalOpen] = useState(false);
     const [openWithHeader, setOpenWithHeader] = useState(false);
@@ -64,7 +66,12 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     const [date, setDate] = useState<Date>(moment().add(1, "days").toDate());
     const [token, setToken] = useState("");
     const [openSaleForm, setOpenSaleForm] = useState(false);
-    const [qty, setQty] = useState(0);
+    const [qty, setQty] = useState(1);
+    const [price, setPrice] = useState(0);
+    const [discount, setDiscount] = useState(0);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [mountedValue, setMountedValue] = useState(true);
+    const [total, setTotal] = useState(0);
     useEffect(() => {
         setMounted(true)
         asyncLocalStorage.getItem(TOKEN)
@@ -125,32 +132,64 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         }
     }
 
+    useEffect(() => {
+        let discountAmount = price * qty * (discount / 100)
+        setDiscountAmount(discountAmount)
+        setTotal(price * qty - discountAmount)
+    }, [qty, discount, discountAmount, price]);
+
+    useEffect(() => {
+        if (!selectedSale) return
+        setDate(moment(selectedSale?.date).toDate())
+        setSelectedInputEmployee(selectedSale?.employee_id)
+        setSelectedInputShop(selectedSale?.shop_id)
+        setSelectedProduct(selectedSale?.product_id)
+        setPrice(selectedSale?.price)
+        setQty(selectedSale?.qty)
+        setDiscount(selectedSale?.discount * 100)
+        setDiscountAmount(selectedSale?.discount_amount)
+        setTotal(selectedSale?.total)
+    }, [selectedSale]);
+
     const create = async () => {
         // console.log("saleCategory", saleCategory)
         // return
         try {
+            if (!selectedProduct) throw Error("Pilih produk terlebih dahulu")
+            if (!selectedInputEmployee) throw Error("Pilih salesman terlebih dahulu")
+            if (!selectedInputShop) throw Error("Pilih toko terlebih dahulu")
             setIsLoading(true)
-            // if (selectedSale) {
-            //     await editSale(selectedSale.id!, {
-            //         name,
-            //         sku,
-            //         barcode,
-            //         selling_price: sellingPrice,
-            //         product_category_id: `${saleCategory}`,
-            //     })
-            // } else {
+            if (selectedSale) {
+                await editSale(selectedSale.id, {
+                    date: date.toISOString(),
+                    product_id: `${selectedProduct}`,
+                    shop_id: `${selectedInputShop}`,
+                    qty,
+                    price,
+                    sub_total: qty * price,
+                    discount: discount / 100,
+                    discount_amount: discountAmount,
+                    total: total,
+                    employee_id: `${selectedInputEmployee}`,
+                })
+            } else {
+                await addSale({
+                    date: date.toISOString(),
+                    product_id: `${selectedProduct}`,
+                    shop_id: `${selectedInputShop}`,
+                    qty,
+                    price,
+                    sub_total: qty * price,
+                    discount: discount / 100,
+                    discount_amount: discountAmount,
+                    total: total,
+                    employee_id: `${selectedInputEmployee}`,
+                })
+            }
 
-            //     await addSale({
-            //         name,
-            //         sku,
-            //         barcode,
-            //         selling_price: sellingPrice,
-            //         product_category_id: `${saleCategory}`,
-            //     })
-            // }
             getAllSale()
             clearForm()
-            setmodalOpen(false)
+            setOpenSaleForm(false)
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -159,6 +198,13 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         }
     }
 
+    useEffect(() => {
+        if (!selectedProduct) return
+        getProductDetail(`${selectedProduct}`)
+            .then(v => v.json())
+            .then(v => setPrice(v.data.selling_price))
+    }, [selectedProduct]);
+
     const clearForm = () => {
         setName("")
         setSku("")
@@ -166,6 +212,17 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         setSellingPrice(0)
         setProductCategory(null)
         setSelectedSale(null)
+        setSelectedInputEmployee(null)
+        setSelectedInputShop(null)
+        setSelectedProduct(null)
+    }
+
+    const refreshInput = () => {
+        setMountedValue(false)
+        setTimeout(() => {
+            setMountedValue(true)
+
+        }, 50);
     }
     return (<DashboardLayout permission='read_sale'>
         <div className='col-span-2 bg-white rounded-xl p-6 hover:shadow-lg'>
@@ -200,16 +257,19 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                         { data: money(e.qty), className: "text-right" },
                         { data: money(e.price), className: "text-right" },
                         { data: money(e.total), className: "text-right" },
-                        { data: e.employee_name },
+                        { data: <div className=' hover:font-bold cursor-pointer' onClick={() => nav(`/employee/${e.employee_id}`)}>
+                            {e.employee_name}
+                        </div> },
                         { data: e.shop_name },
                         {
                             data: <div className='flex cursor-pointer justify-end'>
-                                <EyeIcon onClick={async () => {
-                                    // nav(`/sale/${e.id}`)
-                                    setSelectedSale(e)
-
-                                    setmodalOpen(true)
-                                }} className='w-5 text-blue-400  hover:text-blue-800 cursor-pointer' />
+                                {!e.incentive_id &&
+                                    <EyeIcon onClick={async () => {
+                                        // nav(`/sale/${e.id}`)
+                                        setSelectedSale(e)
+                                        setOpenSaleForm(true)
+                                    }} className='w-5 text-blue-400  hover:text-blue-800 cursor-pointer' />
+                                }
                                 <TrashIcon
                                     className=" h-5 w-5 text-red-400 hover:text-red-600"
                                     aria-hidden="true"
@@ -230,10 +290,37 @@ const SalePage: FC<SalePageProps> = ({ }) => {
         <Drawer open={openSaleForm} onClose={() => setOpenSaleForm(false)}>
             <Drawer.Header>
                 <Drawer.Title>Form Penjualan</Drawer.Title>
+                <Drawer.Actions>
+                    <Button className='mr-2' appearance='primary' onClick={create}>
+                        <BsFloppy2 className='mr-2' /> Simpan
+                    </Button>
+                </Drawer.Actions>
             </Drawer.Header>
             <Drawer.Body className='p-8'>
                 <InlineForm title="Tanggal">
                     <DatePicker className='w-full' value={date} onChange={(val) => setDate(val!)} placement="bottomEnd" format='dd/MM/yyyy' />
+                </InlineForm>
+                <InlineForm title="Salesman">
+                    <SelectPicker<ItemDataType<Employee> | string>
+                        labelKey="full_name"
+                        onClean={() => setSelectedInputEmployee(null)}
+                        valueKey="id"
+                        onSearch={(val) => {
+                            if (val)
+                                getAllEmployees(val)
+                        }}
+                        placeholder="Salesman" searchable={true} data={employees} value={selectedInputEmployee} onSelect={(val) => setSelectedInputEmployee(val)} block />
+                </InlineForm>
+                <InlineForm title="Toko">
+                    <SelectPicker<ItemDataType<Shop> | string>
+                        labelKey="name"
+                        onClean={() => setSelectedInputShop(null)}
+                        valueKey="id"
+                        onSearch={(val) => {
+                            if (val)
+                                getAllShops(val)
+                        }}
+                        placeholder="Toko" searchable={true} data={shops} value={selectedInputShop} onSelect={(val) => setSelectedInputShop(val)} block />
                 </InlineForm>
                 <InlineForm title="Produk">
                     <SelectPicker<ItemDataType<Product> | string>
@@ -242,11 +329,61 @@ const SalePage: FC<SalePageProps> = ({ }) => {
                         valueKey="id"
                         onSearch={(val) => {
                             if (val)
-                                getAllProductCategories(val)
+                                getAllProducts(val)
                         }}
                         placeholder="Produk" searchable={true} data={products} value={selectedProduct} onSelect={(val) => setSelectedProduct(val)} block />
                 </InlineForm>
+                <InlineForm title="Harga">
+                    <div className='px-4 text-right'>
+                        {money(price)}
+                    </div>
+                </InlineForm>
+                <InlineForm title="Qty">
+                    {mountedValue &&
+                        <CurrencyInput
+                            className='form-control text-right'
+                            groupSeparator="."
+                            decimalSeparator=","
+                            value={qty}
+                            onValueChange={(value, _, values) => {
+                                setQty(values?.float ?? 0)
+                            }}
+
+                        />
+                    }
+                </InlineForm>
+                <InlineForm title="Sub Total">
+                    <div className='px-4 text-right'>
+                        {money(price * qty)}
+                    </div>
+                </InlineForm>
+                <InlineForm title="Diskon" subtitle="persen(%)">
+                    {mountedValue &&
+                        <CurrencyInput
+                            className='form-control text-right'
+                            groupSeparator="."
+                            decimalSeparator=","
+                            value={discount}
+                            onValueChange={(value, _, values) => {
+                                if ((values?.float ?? 0) > 100) {
+                                    setDiscount(100)
+                                    refreshInput()
+                                    return
+                                }
+                                setDiscount(values?.float ?? 0)
+                            }}
+
+                        />
+                    }
+                </InlineForm>
+                <InlineForm title="Total">
+                    <div className='px-4 text-right'>
+                        {money(total)}
+                    </div>
+                </InlineForm>
+
             </Drawer.Body>
+
         </Drawer>
         <Drawer open={openWithHeader} onClose={() => setOpenWithHeader(false)}>
             <Drawer.Header>
@@ -352,3 +489,7 @@ const SalePage: FC<SalePageProps> = ({ }) => {
     </DashboardLayout>);
 }
 export default SalePage;
+function adddProduct(arg0: { name: string; sku: string; barcode: string; selling_price: number; product_category_id: string; }) {
+    throw new Error('Function not implemented.');
+}
+

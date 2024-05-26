@@ -137,7 +137,10 @@ const ProductPage: FC<ProductPageProps> = ({ }) => {
                 activePage={page}
                 setActivePage={(v) => setPage(v)}
                 changeLimit={(v) => setLimit(v)}
-                onSearch={(val) => setSearch(val)}
+                onSearch={(val) => {
+                    setPage(1)
+                    setSearch(val)
+                }}
                 searchHeader={
                     <div>
                 <Button className='mr-2' onClick={() => setmodalOpen(true)}><PlusIcon className='w-4 mr-1' /> Tambah Produk</Button>
@@ -247,13 +250,23 @@ const ProductPage: FC<ProductPageProps> = ({ }) => {
             </Drawer.Header>
             <Drawer.Body className='p-8'>
                 <h3 className=' text-2xl text-black'>Filter</h3>
-                <InlineForm title="Karyawan">
+                <InlineForm title="Kategori">
                     <SelectPicker<ItemDataType<ProductCategory> | string>
                         labelKey="name"
-                        onClean={() => setSelectedProductCategory(null)}
+                        onClean={() => {
+                            setSelectedProductCategory(null)
+                            setPage(1)
+                            getAllProductCategories("")
+                        }}
                         valueKey="id"
-                        onSearch={(val) => getAllProductCategories(val)}
-                        placeholder="Kategori" searchable={true} data={productCategories} value={selectedProductCategory} onSelect={(val) => setSelectedProductCategory(val)} block />
+                        onSearch={(val) => {
+                            if(!val) return
+                            getAllProductCategories(val)
+                        }}
+                        placeholder="Kategori" searchable={true} data={productCategories} value={selectedProductCategory} onSelect={(val) => {
+                            setSelectedProductCategory(val)
+                            setPage(1)
+                        }} block />
                 </InlineForm>
 
                 <Button onClick={async () => {

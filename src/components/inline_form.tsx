@@ -31,9 +31,11 @@ const InlineForm: FC<InlineFormProps> = ({
                 className="block text-gray-900 mb-0 pr-4"
             >
                 <div className={`flex  relative ${titleClassName} justify-between`}>
-                    <div className='flex-col'>
+                    <div className='flex-col flex'>
                         {title}
+                        <small>
                         {subtitle}
+                        </small>
                     </div>
                     {hints && toolTip(hints, <InformationCircleIcon className='w-4' />)}
                 </div>

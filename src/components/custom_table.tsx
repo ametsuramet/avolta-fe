@@ -158,6 +158,7 @@ const CustomTable: FC<CustomTableProps> = ({
                         limit={limit ?? 10}
                         activePage={activePage}
                         onChangePage={setActivePage}
+                        maxButtons={10}
                     /></div>}
 
         </div>

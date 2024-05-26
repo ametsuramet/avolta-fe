@@ -16,6 +16,7 @@ export interface Sale {
     discount_amount: number
     total: number
     employee_id: string
+    incentive_id?: string
     employee_name: string
     employee_picture: string
 }

@@ -122,3 +122,9 @@ body {
 .rs-avatar span {
     @apply text-xs
 }
+.rs-sidenav-collapse-in {
+    flex-grow: 1;
+    overflow-y: auto;
+    height: 100%;
+
+}
