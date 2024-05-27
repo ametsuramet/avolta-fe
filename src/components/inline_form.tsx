@@ -41,7 +41,7 @@ const InlineForm: FC<InlineFormProps> = ({
                 </div>
             </label>
         </div>
-        <div className={`w-2/3  ${bodyClassName}`}>
+        <div className={`w-2/3  ${bodyClassName} text-sm`}>
             {children}
         </div>
     </div>);

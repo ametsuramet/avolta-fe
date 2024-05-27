@@ -5,20 +5,26 @@ import { Employee } from '@/model/employee';
 import { Incentive, IncentiveSummary } from '@/model/incentive';
 import { IncentiveReport } from '@/model/incentive_report';
 import { Sale } from '@/model/sale';
+import { Setting } from '@/model/setting';
 import { LoadingContext } from '@/objects/loading_context';
 import { addEmployee, getEmployees } from '@/repositories/employee';
-import { addEmployeeIncentiveReport, getIncentiveReportDetail, updateItemIncentiveReport } from '@/repositories/incentive_report';
+import { addEmployeeIncentiveReport, editIncentiveReport, getIncentiveReportDetail, updateItemIncentiveReport } from '@/repositories/incentive_report';
 import { deleteIncentive, getIncentives } from '@/repositories/inventive';
+import { addPayRoll } from '@/repositories/pay_roll';
+import { addPayRollItem } from '@/repositories/pay_roll_item';
 import { getSales } from '@/repositories/sale';
+import { getAutoNumber, getSettingDetail } from '@/repositories/setting';
 import { confirmDelete, money, randomStr } from '@/utils/helper';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
+import moment from 'moment';
 import { useContext, useEffect, useState, type FC } from 'react';
-import { BsFloppy2 } from 'react-icons/bs';
+import { BsCheck2, BsFloppy2, BsWallet2 } from 'react-icons/bs';
+import { LuWallet2 } from 'react-icons/lu';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Badge, Button, Modal, Tabs, TagPicker } from 'rsuite';
+import { Badge, Button, Checkbox, Modal, Tabs, TagPicker } from 'rsuite';
 import { json } from 'stream/consumers';
 import Swal from 'sweetalert2';
 
@@ -40,10 +46,15 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
     const [modalSummaryOpen, setModalSummaryOpen] = useState(false);
     const [selectedIncentiveId, setSelectedIncentiveId] = useState<string | null>(null);
     const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+    const [selectedIncentives, setSelectedIncentives] = useState<Incentive[]>([]);
+    const [settting, setSettting] = useState<Setting | null>(null);
 
 
     useEffect(() => {
         setMounted(true)
+        getSettingDetail()
+            .then(v => v.json())
+            .then(v => setSettting(v.data))
     }, []);
     useEffect(() => {
         if (!mounted) return
@@ -99,6 +110,50 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                 setIsLoading(false)
             })
     }
+
+    const generatePayroll = async () => {
+        try {
+            setIsLoading(true)
+            for (const iterator of selectedIncentives) {
+               let respNumber = await getAutoNumber()
+               let respNumberJson = await respNumber.json()
+            
+                const resp = await addPayRoll({
+                    pay_roll_number: respNumberJson.data,
+                    title: "",
+                    notes: `Generate From ${incentiveReport?.report_number}`,
+                    start_date: moment(incentiveReport?.start_date).toISOString(),
+                    end_date: moment(incentiveReport?.end_date).toISOString(),
+                    employee_id: iterator.employee_id,
+                    is_gross_up: settting?.is_gross_up ?? false,
+                    is_effective_rate_average: settting?.is_effective_rate_average ?? false,
+                })
+                const respJson = await resp.json()
+
+                let payrollId = respJson.data.last_id
+                await addPayRollItem({
+                    pay_roll_id: payrollId,
+                    item_type: 'ALLOWANCE',
+                    title: `Insentif/Komisi`,
+                    notes: '',
+                    is_default: false,
+                    is_deductible: false,
+                    is_tax: false,
+                    tax_auto_count: false,
+                    is_tax_cost: false,
+                    is_tax_allowance: false,
+                    amount: iterator.total_incentive,
+                })
+
+
+            }
+            Swal.fire(`Perhatian`, `Pay Roll berhasil di generate, silakan masuk ke menu payroll`, 'success')
+        } catch (error) {
+            Swal.fire(`Perhatian`, `${error}`, 'error')
+        } finally {
+            setIsLoading(false)
+        }
+    }
     return (<DashboardLayout permission='read_incentive_report'>
         <div className='grid grid-cols-2 gap-4 mb-4'>
             <div className='bg-white rounded-xl p-6 hover:shadow-lg'>
@@ -113,28 +168,40 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                 </InlineForm>
                 <InlineForm style={{ marginBottom: 10, alignItems: "start" }} title="Keterangan">
                     {editable ? <textarea placeholder='Keterangan ....' id={`incentiveReport-${incentiveReport?.id}`} defaultValue={incentiveReport?.description} onKeyUp={(el) => {
-                                    if (el.key == "Enter") {
-                                        document.getElementById(`incentiveReport-${incentiveReport?.id}`)!.blur();
-                                    }
-                                }} onBlur={(el) => {
-                                    let editted = {
-                                        ...incentiveReport,
-                                        description: el.target.value, 
-                                    }
-                                    console.log(editted)
-                                }} /> : incentiveReport?.description}
-                    
+                        if (el.key == "Enter") {
+                            document.getElementById(`incentiveReport-${incentiveReport?.id}`)!.blur();
+                        }
+                    }} onBlur={(el) => {
+                        let editted: IncentiveReport = {
+                            ...incentiveReport!,
+                            description: el.target.value,
+                        }
+                        setIncentiveReport(editted)
+                    }} /> : incentiveReport?.description}
+
                 </InlineForm>
                 <InlineForm style={{ marginBottom: 10 }} title="Dibuat">
                     {incentiveReport?.user_name}
                 </InlineForm>
-                <InlineForm style={{ marginBottom: 10 }} title="Status">
+                <InlineForm style={{ marginBottom: 10, alignItems: 'start' }} title="Status" >
                     <div>
                         {incentiveReport?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={incentiveReport?.status} />}
-                        {incentiveReport?.status == "REVIEWED" && <Badge className='text-center' color='blue' content={incentiveReport?.status} />}
+                        {incentiveReport?.status == "PROCESSING" && <Badge className='text-center' color='blue' content={incentiveReport?.status} />}
                         {incentiveReport?.status == "APPROVED" && <Badge className='text-center' color='green' content={incentiveReport?.status} />}
                         {incentiveReport?.status == "REJECTED" && <Badge className='text-center' color='red' content={incentiveReport?.status} />}
                     </div>
+                    {incentiveReport?.status == "DRAFT" && <Button onClick={() => {
+                        editIncentiveReport(incentiveReportId!, {
+                            description: incentiveReport?.description ?? "",
+                            status: 'PROCESSING'
+                        }).then(() => getDetail())
+                    }} className='mt-4 w-32' appearance='primary' color='blue'><BsFloppy2 className='mr-2' />Simpan</Button>}
+                    {incentiveReport?.status == "PROCESSING" && <Button onClick={() => {
+                        editIncentiveReport(incentiveReportId!, {
+                            description: incentiveReport?.description ?? "",
+                            status: 'FINISHED'
+                        }).then(() => getDetail())
+                    }} className='mt-4 w-32' appearance='primary' color='green'><BsCheck2 className='mr-2' />Selesai</Button>}
                 </InlineForm>
             </div>
             <div className='bg-white rounded-xl p-6 hover:shadow-lg'>
@@ -152,7 +219,13 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
         <div className='bg-white rounded-xl p-6 hover:shadow-lg'>
             <div className='flex justify-between'>
                 <h3 className='font-bold mb-4 text-black text-lg'>{"Detail Insentif"}</h3>
-                <Button size='sm' onClick={() => setModalOpen(true)}><PlusIcon className='w-4 mr-4' />Tambah Salesman</Button>
+                {editable &&
+                    <Button size='sm' onClick={() => setModalOpen(true)}><PlusIcon className='w-4 mr-2' />Tambah Salesman</Button>
+                }
+                {incentiveReport?.status == "PROCESSING" &&
+                    <Button disabled={selectedIncentives.length == 0} color='blue' appearance='primary' size='sm' onClick={() => generatePayroll()}><LuWallet2 className='w-4 mr-2' />Generate Payroll </Button>
+                }
+
             </div>
             <div className="overflow-y-auto mt-8">
                 <table className="w-full h-full text-xs text-left rtl:text-right text-gray-700">
@@ -165,7 +238,17 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                             <th rowSpan={2} scope="col" className={`border text-sm px-3 py-1 text-center`}>Total Komisi</th>
                             <th colSpan={3} scope="col" className={`border text-sm px-3 py-1 text-center`}>Kehadiran</th>
                             <th rowSpan={2} scope="col" className={`border text-sm px-3 py-1 text-center`}>Komisi yang didapat</th>
-                            <th rowSpan={2} scope="col" className={`border text-sm px-3 py-1 text-center`}></th>
+                            <th rowSpan={2} scope="col" className={`border text-sm px-3 py-1 text-center`}>
+                                {incentiveReport?.status == "PROCESSING" &&
+                                    <Checkbox onChange={(val, checked, _) => {
+                                        if (checked) {
+                                            setSelectedIncentives([...incentives])
+                                        } else {
+                                            setSelectedIncentives([])
+                                        }
+                                    }} checked={incentives.length == selectedIncentives.length} />
+                                }
+                            </th>
                         </tr>
                         <tr className=' '>
 
@@ -308,6 +391,15 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                                                 })
                                             }}
                                         />
+                                    }
+                                    {incentiveReport?.status == "PROCESSING" &&
+                                        <Checkbox onChange={(val, checked, _) => {
+                                            if (checked) {
+                                                setSelectedIncentives([...selectedIncentives, e])
+                                            } else {
+                                                setSelectedIncentives([...selectedIncentives.filter(p => p != e)])
+                                            }
+                                        }} checked={selectedIncentives.includes(e)} />
                                     }
                                 </div>
                             </td>

@@ -22,6 +22,10 @@ export interface IncentiveReportReq {
     end_date: string
     status?: string
 }
+export interface EditIncentiveReportReq {
+    description: string
+    status?: string
+}
 export interface IncentiveEditItemReq {
     sick_leave: number
     other_leave: number

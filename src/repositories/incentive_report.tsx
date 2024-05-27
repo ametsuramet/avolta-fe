@@ -1,4 +1,4 @@
-import { IncentiveEditItemReq, IncentiveReportFilter, IncentiveReportReq } from "@/model/incentive_report";
+import { EditIncentiveReportReq, IncentiveEditItemReq, IncentiveReportFilter, IncentiveReportReq } from "@/model/incentive_report";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
 
@@ -38,7 +38,7 @@ export const addIncentiveReport = async (req: IncentiveReportReq) => {
     })
 }
 
-export const editIncentiveReport = async (id:string, req: IncentiveReportReq) => {
+export const editIncentiveReport = async (id:string, req: EditIncentiveReportReq) => {
     return await customFetch(`admin/incentiveReport/${id}`, {
         method: "PUT",
         body: JSON.stringify(req)
