@@ -14,6 +14,10 @@ export const getSales = async (pagination: PaginationReq, filter?: SaleFilter) =
         params["search"] = pagination.search
     }
 
+
+    if (pagination.order) {
+        params["order"] = pagination.order
+    }
     if (filter) {
         if (filter.product_category_id) {
             params["product_category_id"] = filter.product_category_id
@@ -23,6 +27,9 @@ export const getSales = async (pagination: PaginationReq, filter?: SaleFilter) =
         }
         if (filter.employee_id) {
             params["employee_id"] = filter.employee_id
+        }
+        if (filter.incentive_id) {
+            params["incentive_id"] = filter.incentive_id
         }
         if (filter.download) {
             params["download"] = "1"

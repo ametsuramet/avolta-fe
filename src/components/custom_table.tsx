@@ -124,7 +124,7 @@ const CustomTable: FC<CustomTableProps> = ({
                             return <tr key={`row-${footer.indexOf(record)}`} className={`bg-white border-b  ${record.className} `}>
                                 {record.cells.map(cell => {
                                     return (
-                                        <td key={`cell-${record.cells.indexOf(cell)}`} className={`px-6 py-4 ${cell.className ?? ''}`}>{cell.data}</td>
+                                        <td colSpan={cell.colSpan} key={`cell-${record.cells.indexOf(cell)}`} className={`px-6 py-4 ${cell.className ?? ''}`}>{cell.data}</td>
                                     );
                                 })}
 

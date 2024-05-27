@@ -10,10 +10,12 @@ export interface Incentive {
     total_included_sales: number
     total_excluded_sales: number
     total_incentive: number
+    total_incentive_bruto: number
     sick_leave: number
     other_leave: number
     absent: number
     sales: Sale[]
+    summaries: IncentiveSummary[]
     incentive_shops: IncentiveShop[]
 }
 export interface IncentiveReq {
@@ -24,6 +26,7 @@ export interface IncentiveReq {
     total_included_sales: string
     total_excluded_sales: string
     total_incentive: string
+    total_incentive_bruto: string
     sick_leave: string
     other_leave: string
     absent: string
@@ -32,5 +35,16 @@ export interface IncentiveReq {
 export interface IncentiveFilter {
     product_category_id?: string | null
     shop_id?: string | null
+    incentive_report_id?: string | null
     download?: boolean | null
 }
+
+export interface IncentiveSummary {
+    id: string
+    shop_id: string
+    name: string
+    shop_name: string
+    total: number
+    commission_percent: number
+    total_comission: number
+  }

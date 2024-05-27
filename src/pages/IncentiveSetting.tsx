@@ -25,6 +25,7 @@ import { Button, Drawer, Modal, SelectPicker, Uploader } from 'rsuite';
 import { ItemDataType } from 'rsuite/esm/MultiCascadeTree';
 import Swal from 'sweetalert2';
 
+
 interface IncentiveSettingPageProps { }
 
 const IncentiveSettingPage: FC<IncentiveSettingPageProps> = ({ }) => {
@@ -177,7 +178,7 @@ const IncentiveSettingPage: FC<IncentiveSettingPageProps> = ({ }) => {
                 activePage={page}
                 setActivePage={(v) => setPage(v)}
                 changeLimit={(v) => setLimit(v)}
-                headers={["No", "Toko", "Kategori", "T. Penjualan Min", "T. Penjualan Max", "Komisi Min", "Komisi Max", "Sakit", "Izin", "Alpa", ""]} headerClasses={[]} datasets={incentive_settings.map(e => ({
+                headers={["No", "Toko", "Kategori", "T. Penjualan Min", "T. Penjualan Max", "Komisi Min", "Komisi Max", ""]} headerClasses={[]} datasets={incentive_settings.map(e => ({
                     cells: [
                         { data: ((page - 1) * limit) + (incentive_settings.indexOf(e) + 1) },
                         { data: e.shop_name },
@@ -186,9 +187,7 @@ const IncentiveSettingPage: FC<IncentiveSettingPageProps> = ({ }) => {
                         { data: money(e.maximum_sales_target) },
                         { data: `${money(e.minimum_sales_commission * 100)}%` },
                         { data: `${money(e.maximum_sales_commission * 100)}%` },
-                        { data: money(e.sick_leave_threshold) },
-                        { data: money(e.other_leave_threshold) },
-                        { data: money(e.absent_threshold) },
+                     
                         {
                             data: <div className='flex cursor-pointer'>
                                 <EyeIcon onClick={() => {
@@ -303,7 +302,7 @@ const IncentiveSettingPage: FC<IncentiveSettingPageProps> = ({ }) => {
                         />
                     }
                 </InlineForm>
-
+{/* 
                 <InlineForm title="Batas Sakit (Hari)">
                     {mountedValue &&
                         <CurrencyInput
@@ -343,7 +342,7 @@ const IncentiveSettingPage: FC<IncentiveSettingPageProps> = ({ }) => {
                             }}
                         />
                     }
-                </InlineForm>
+                </InlineForm> */}
             </Modal.Body>
             <Modal.Footer>
                 <Button className='mr-2' appearance='primary' onClick={save}>

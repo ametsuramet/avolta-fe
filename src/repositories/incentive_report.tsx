@@ -1,4 +1,4 @@
-import { IncentiveReportFilter, IncentiveReportReq } from "@/model/incentive_report";
+import { IncentiveEditItemReq, IncentiveReportFilter, IncentiveReportReq } from "@/model/incentive_report";
 import { PaginationReq } from "@/objects/pagination"
 import { customFetch } from "@/utils/helper"
 
@@ -31,9 +31,6 @@ export const getIncentiveReports = async (pagination: PaginationReq, filter?: In
 
 } 
 
-
-
-
 export const addIncentiveReport = async (req: IncentiveReportReq) => {
     return await customFetch(`admin/incentiveReport`, {
         method: "POST",
@@ -43,6 +40,13 @@ export const addIncentiveReport = async (req: IncentiveReportReq) => {
 
 export const editIncentiveReport = async (id:string, req: IncentiveReportReq) => {
     return await customFetch(`admin/incentiveReport/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(req)
+    })
+}
+
+export const updateItemIncentiveReport = async (id:string, itemId: string, req: IncentiveEditItemReq) => {
+    return await customFetch(`admin/incentiveReport/${id}/EditIncentive/${itemId}`, {
         method: "PUT",
         body: JSON.stringify(req)
     })

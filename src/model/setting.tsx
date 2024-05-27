@@ -16,6 +16,9 @@ export interface Setting {
     incentive_auto_format: string
     incentive_static_character: string
     incentive_auto_number_character_length: number
+    incentive_sick_leave_threshold: number
+    incentive_other_leave_threshold: number
+    incentive_absent_threshold: number
     is_effective_rate_average: boolean
     is_gross_up: boolean
     bpjs_kes: boolean
@@ -35,6 +38,9 @@ export interface SettingReq {
     incentive_auto_format: string
     incentive_static_character: string
     incentive_auto_number_character_length: number
+    incentive_sick_leave_threshold: number
+    incentive_other_leave_threshold: number
+    incentive_absent_threshold: number
     pay_roll_payable_account_id?: string | null
     pay_roll_expense_account_id?: string | null
     pay_roll_asset_account_id?: string | null

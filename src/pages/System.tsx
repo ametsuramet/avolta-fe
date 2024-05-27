@@ -157,6 +157,9 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                 incentive_auto_format: setting?.incentive_auto_format ?? "",
                 incentive_static_character: setting?.incentive_static_character ?? "",
                 incentive_auto_number_character_length: setting?.incentive_auto_number_character_length ?? 5,
+                incentive_sick_leave_threshold: setting?.incentive_sick_leave_threshold ?? 5,
+                incentive_other_leave_threshold: setting?.incentive_other_leave_threshold ?? 5,
+                incentive_absent_threshold: setting?.incentive_absent_threshold ?? 5,
             })
             // setCompany(respJson.data)
             getAllSetting()
@@ -398,6 +401,54 @@ const SystemPage: FC<SystemPageProps> = ({ }) => {
                                 }}
                             />
                         </InlineForm>
+                      
+                  
+                        <InlineForm title={"Batas Sakit"}>
+                            <input
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                type="number"
+
+                                value={setting?.incentive_sick_leave_threshold ?? ""}
+                                onChange={(e) => {
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_sick_leave_threshold: parseFloat(e.target.value),
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                        <InlineForm title={"Batas Izin"}>
+                            <input
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                type="number"
+
+                                value={setting?.incentive_other_leave_threshold ?? ""}
+                                onChange={(e) => {
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_other_leave_threshold: parseFloat(e.target.value),
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                        <InlineForm title={"Batas Alpa"}>
+                            <input
+                                className="bg-white appearance-none border border-gray-200 rounded-xl w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+
+                                type="number"
+
+                                value={setting?.incentive_absent_threshold ?? ""}
+                                onChange={(e) => {
+                                    setSetting({
+                                        ...setting!,
+                                        incentive_absent_threshold: parseFloat(e.target.value),
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                       
                         <InlineForm title={"Auto Number"}>
                             {incentiveAutoNumber}
                         </InlineForm>

@@ -1,4 +1,5 @@
 import { Incentive } from "./incentive"
+import { Shop } from "./shop"
 
 export interface IncentiveReport {
     id: string
@@ -10,6 +11,7 @@ export interface IncentiveReport {
     end_date: string
     status: string
     incentives: Incentive[]
+    shops: Shop[]
 }
 export interface IncentiveReportReq {
     description: string
@@ -19,6 +21,12 @@ export interface IncentiveReportReq {
     shop_ids: string[]
     end_date: string
     status?: string
+}
+export interface IncentiveEditItemReq {
+    sick_leave: number
+    other_leave: number
+    absent: number
+   
 }
 
 export interface IncentiveReportFilter {

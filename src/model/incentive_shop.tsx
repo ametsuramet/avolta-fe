@@ -1,3 +1,4 @@
+import { IncentiveSummary } from "./incentive"
 import { Sale } from "./sale"
 
 export interface IncentiveShop {
@@ -8,7 +9,9 @@ export interface IncentiveShop {
     total_sales: number
     total_included_sales: number
     total_excluded_sales: number
+    total_incentive_bruto: number
     total_incentive: number
+    summaries: IncentiveSummary[]
 }
 export interface IncentiveShopReq {
     shop_id: string
@@ -17,6 +20,7 @@ export interface IncentiveShopReq {
     total_sales: number
     total_included_sales: number
     total_excluded_sales: number
+    total_incentive_bruto: number
     total_incentive: number
 }
 

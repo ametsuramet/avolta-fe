@@ -15,7 +15,7 @@ import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFloppy2 } from 'react-icons/bs';
 import Moment from 'react-moment';
 import { useNavigate } from 'react-router-dom';
-import { Button, TagPicker } from 'rsuite';
+import { Button, Modal, TagPicker } from 'rsuite';
 import DateRangePicker, { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
 
@@ -116,7 +116,7 @@ const IncentiveReportPage: FC<IncentiveReportPageProps> = ({ }) => {
                             { data: e.report_number },
                             { data: e.description },
                             {
-                                data: <div className='flex cursor-pointer'>
+                                data: <div className='flex cursor-pointer justify-end'>
                                     <EyeIcon onClick={() => {
                                         nav(`/incentive/report/${e.id}`)
                                         // setSelectedIncentiveReport(e)
@@ -176,6 +176,7 @@ const IncentiveReportPage: FC<IncentiveReportPageProps> = ({ }) => {
                 </div>
             </div>
         </div>
+
 
     </DashboardLayout>);
 }

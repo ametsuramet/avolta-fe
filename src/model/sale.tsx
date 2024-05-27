@@ -40,6 +40,7 @@ export interface SaleFilter {
     dateRange?: DateRange | null
     product_category_id?: string | null
     employee_id?: string | null
+    incentive_id?: string | null
     shop_id?: string | null
     download?: boolean | null
 }
