@@ -16,5 +16,6 @@ export interface ProductReq {
 }
 export interface ProductFilter {
   product_category_id?: string | null
+  product_id?: string | null
   download?: boolean | null
 }

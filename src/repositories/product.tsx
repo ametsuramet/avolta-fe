@@ -20,6 +20,9 @@ export const getProducts = async (pagination: PaginationReq, filter?: ProductFil
         if (filter.download) {
             params["download"] = "1"
         }
+        if (filter.product_id) {
+            params["product_id"] = filter.product_id
+        }
     }
     return await customFetch(`admin/product?${new URLSearchParams(params)}`)
 

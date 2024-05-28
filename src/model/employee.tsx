@@ -39,6 +39,7 @@ export interface Employee {
 
 export interface EmployeeFilter  {
   ageRange?: DateRange | null
+  employee_id?: string | null
   jobTitleID?: string | null
   gender?: string | null
   startedWork?: Date  | null

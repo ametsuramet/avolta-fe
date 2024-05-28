@@ -96,13 +96,13 @@ const SalePage: FC<SalePageProps> = ({ }) => {
             .then(v => v.json())
             .then(v => setProductCategories(v.data))
     }
-    const getAllProducts = async (s: string) => {
-        getProducts({ page: 1, limit: 20, search: s })
+    const getAllProducts = async (s: string, productId?: string | null) => {
+        getProducts({ page: 1, limit: 20, search: s }, {product_id: productId})
             .then(v => v.json())
             .then(v => setProducts(v.data))
     }
-    const getAllEmployees = async (s: string) => {
-        getEmployees({ page: 1, limit: 5, search: s })
+    const getAllEmployees = async (s: string, employeeId?: string | null) => {
+        getEmployees({ page: 1, limit: 5, search: s }, {employee_id: employeeId})
             .then(v => v.json())
             .then(v => setEmployees(v.data))
     }
@@ -140,6 +140,9 @@ const SalePage: FC<SalePageProps> = ({ }) => {
 
     useEffect(() => {
         if (!selectedSale) return
+        getAllEmployees("",selectedSale?.employee_id)
+        getAllProducts("",selectedSale?.product_id)
+        getAllProductCategories("")
         setDate(moment(selectedSale?.date).toDate())
         setSelectedInputEmployee(selectedSale?.employee_id)
         setSelectedInputShop(selectedSale?.shop_id)

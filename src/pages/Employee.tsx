@@ -244,7 +244,8 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                         onSuccess={async (resp) => {
                             Swal.fire("Perhatian", "Unggah File Berhasil", "success")
 
-                            console.log(resp)
+                            getAllEmployee()
+                            getAllJobTitles("")
                         }}
                         headers={{
                             authorization: `Bearer ${token}`
