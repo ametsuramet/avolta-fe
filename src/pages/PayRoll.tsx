@@ -13,7 +13,7 @@ import { BsFloppy2 } from 'react-icons/bs';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { MdAddCircleOutline } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { Button, DateRangePicker } from 'rsuite';
+import { Badge, Button, DateRangePicker } from 'rsuite';
 import { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
 import Select, { MultiValue, SingleValue } from 'react-select';
@@ -126,7 +126,7 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Pay Roll", "Karyawan", ""]} headerClasses={[]} datasets={payRolls.map(e => ({
+                    headers={["No", "Pay Roll", "Karyawan", "Status", ""]} headerClasses={[]} datasets={payRolls.map(e => ({
                         cells: [
                             { data: ((page - 1) * limit) + (payRolls.indexOf(e) + 1) },
                             { data: e.notes },
@@ -135,6 +135,13 @@ const PayRollPage: FC<PayRollPageProps> = ({ }) => {
                                     nav(`/employee/${e.employee_id}`)
                                 }}>
                                     {e.employee_name}
+                                </div>
+                            },
+                            {
+                                data: <div>
+                                    {e?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={e?.status} />}
+                                    {e?.status == "RUNNING" && <Badge className='text-center' color='violet' content={e?.status} />}
+                                    {e?.status == "FINISHED" && <Badge className='text-center' color='green' content={e?.status} />}
                                 </div>
                             },
                             {

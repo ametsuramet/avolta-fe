@@ -1,30 +1,34 @@
 import CustomTable from '@/components/custom_table';
 import DashboardLayout from '@/components/dashboard_layout';
 import InlineForm from '@/components/inline_form';
+import { Attendance, AttendanceSummary } from '@/model/attendance';
 import { Employee } from '@/model/employee';
 import { Incentive, IncentiveSummary } from '@/model/incentive';
 import { IncentiveReport } from '@/model/incentive_report';
+import { Leave } from '@/model/leave';
 import { Sale } from '@/model/sale';
 import { Setting } from '@/model/setting';
 import { LoadingContext } from '@/objects/loading_context';
+import { getAttendanceSummaries, getAttendances } from '@/repositories/attendance';
 import { addEmployee, getEmployees } from '@/repositories/employee';
 import { addEmployeeIncentiveReport, editIncentiveReport, getIncentiveReportDetail, updateItemIncentiveReport } from '@/repositories/incentive_report';
 import { deleteIncentive, getIncentives } from '@/repositories/inventive';
+import { getLeaves } from '@/repositories/leave';
 import { addPayRoll } from '@/repositories/pay_roll';
 import { addPayRollItem } from '@/repositories/pay_roll_item';
 import { getSales } from '@/repositories/sale';
 import { getAutoNumber, getSettingDetail } from '@/repositories/setting';
-import { confirmDelete, money, randomStr } from '@/utils/helper';
+import { confirmDelete, countOverTime, money, numberToDuration, randomStr } from '@/utils/helper';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
 import moment from 'moment';
 import { useContext, useEffect, useState, type FC } from 'react';
 import { BsCheck2, BsFloppy2, BsWallet2 } from 'react-icons/bs';
-import { LuWallet2 } from 'react-icons/lu';
+import { LuCalendarClock, LuWallet2 } from 'react-icons/lu';
 import { RiFileDownloadFill } from 'react-icons/ri';
 import Moment from 'react-moment';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Badge, Button, Checkbox, Modal, Tabs, TagPicker } from 'rsuite';
+import { Avatar, Badge, Button, Checkbox, Modal, Panel, Tabs, TagPicker } from 'rsuite';
 import { json } from 'stream/consumers';
 import Swal from 'sweetalert2';
 
@@ -47,7 +51,16 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
     const [selectedIncentiveId, setSelectedIncentiveId] = useState<string | null>(null);
     const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
     const [selectedIncentives, setSelectedIncentives] = useState<Incentive[]>([]);
+    const [selectedIncentive, setSelectedIncentive] = useState<Incentive | null>(null);
     const [settting, setSettting] = useState<Setting | null>(null);
+    const [attendances, setAttendances] = useState<Attendance[]>([]);
+    const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
+    const [modalAttendanceSummaryOpen, setModalAttendanceSummaryOpen] = useState(false);
+    const [leaves, setLeaves] = useState<Leave[]>([]);
+    const [absents, setAbsents] = useState<Leave[]>([]);
+    const [mountedInput, setMountedInput] = useState(true);
+
+
 
 
     useEffect(() => {
@@ -59,11 +72,11 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
     useEffect(() => {
         if (!mounted) return
         getDetail()
-        getAllEmployees()
+        getAllEmployees("")
     }, [mounted]);
 
-    const getAllEmployees = () => {
-        getEmployees({ page: 1, limit: 5 })
+    const getAllEmployees = (s: string) => {
+        getEmployees({ page: 1, limit: 5, search: s })
             .then(v => v.json())
             .then(v => setEmployees(v.data))
     }
@@ -79,6 +92,10 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
         if (incentiveReport) {
             getAllIncentives()
             setEditable(incentiveReport?.status == "DRAFT")
+            setMountedInput(false)
+            setTimeout(() => {
+                setMountedInput(true)
+            }, 300);
         }
     }, [incentiveReport]);
 
@@ -88,6 +105,7 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
             let resp = await getIncentiveReportDetail(incentiveReportId!)
             let respJson = await resp.json()
             setIncentiveReport(respJson.data)
+
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -115,9 +133,9 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
         try {
             setIsLoading(true)
             for (const iterator of selectedIncentives) {
-               let respNumber = await getAutoNumber()
-               let respNumberJson = await respNumber.json()
-            
+                let respNumber = await getAutoNumber()
+                let respNumberJson = await respNumber.json()
+
                 const resp = await addPayRoll({
                     pay_roll_number: respNumberJson.data,
                     title: "",
@@ -270,7 +288,34 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                     <tbody className="text-base text-gray-700 ">
                         {incentives.map(e => (<tr key={e.id}>
                             <td scope="col" className={`px-3 py-1 border text-sm`}>{incentives.indexOf(e) + 1}</td>
-                            <td scope="col" className={`px-3 py-1 border text-sm`}>{e.employee_name}</td>
+                            <td scope="col" className={`px-3 py-1 border text-sm flex justify-between items-center h-full`}>
+                                <span>{e.employee_name}</span>
+                                <LuCalendarClock className='w-3 cursor-pointer' onClick={async () => {
+                                    try {
+                                        setIsLoading(true)
+                                        let att = await getAttendances({ page: 1, limit: 0 }, { employeeID: e.employee_id, dateRange: [moment(incentiveReport?.start_date).toDate(), moment(incentiveReport?.end_date).toDate()] })
+                                        let attJson = await att.json()
+                                        setAttendances(attJson.data)
+                                        let attSum = await getAttendanceSummaries(e.employee_id, { page: 1, limit: 0 }, { dateRange: [moment(incentiveReport?.start_date).toDate(), moment(incentiveReport?.end_date).toDate()] })
+                                        let attSumJson = await attSum.json()
+                                        let leaves = await getLeaves({ page: 1, limit: 0, order: "leaves.start_date asc" }, { status: "APPROVED", employeeID: e.employee_id, dateRange: [moment(incentiveReport?.start_date).toDate(), moment(incentiveReport?.end_date).toDate()], })
+                                        let leavesJson = await leaves.json()
+                                        setLeaves(leavesJson.data)
+                                        let absent = await getLeaves({ page: 1, limit: 0, order: "leaves.start_date asc" }, { employeeID: e.employee_id, dateRange: [moment(incentiveReport?.start_date).toDate(), moment(incentiveReport?.end_date).toDate()], absent: true })
+                                        let absentJson = await absent.json()
+                                        setAbsents(absentJson.data)
+
+                                        setAttendanceSummary(attSumJson.data)
+                                        setModalAttendanceSummaryOpen(true)
+                                        setSelectedIncentive(e)
+
+                                    } catch (error) {
+                                        Swal.fire(`Perhatian`, `${error}`, 'error')
+                                    } finally {
+                                        setIsLoading(false)
+                                    }
+                                }} />
+                            </td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center hover:font-bold cursor-pointer`} onClick={() => {
                                 setSelectedIncentiveId(e.id)
                                 setSelectedShopId(null)
@@ -340,43 +385,49 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                                     })
                             }}>{money(e.total_incentive_bruto, 0)}</td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center`}>
-                                <input disabled={!editable} type='number' id={`sick_leave-${e.id}`} onKeyUp={(el) => {
-                                    if (el.key == "Enter") {
-                                        document.getElementById(`sick_leave-${e.id}`)!.blur();
-                                    }
-                                }} onBlur={(el) => {
-                                    let editted = {
-                                        ...e,
-                                        sick_leave: parseInt(el.target.value)
-                                    }
-                                    updateItem(editted)
-                                }} className='w-10 text-center' defaultValue={e.sick_leave} />
+                                {mountedInput ?
+                                    <input disabled={!editable} type='number' id={`sick_leave-${e.id}`} onKeyUp={(el) => {
+                                        if (el.key == "Enter") {
+                                            document.getElementById(`sick_leave-${e.id}`)!.blur();
+                                        }
+                                    }} onBlur={(el) => {
+                                        let editted = {
+                                            ...e,
+                                            sick_leave: parseInt(el.target.value)
+                                        }
+                                        updateItem(editted)
+                                    }} className='w-10 text-center' defaultValue={e.sick_leave} />
+                                    : <div className='w-10 h-5'></div>}
                             </td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center`}>
-                                <input disabled={!editable} type='number' id={`other_leave-${e.id}`} onKeyUp={(el) => {
-                                    if (el.key == "Enter") {
-                                        document.getElementById(`other_leave-${e.id}`)!.blur();
-                                    }
-                                }} onBlur={(el) => {
-                                    let editted = {
-                                        ...e,
-                                        other_leave: parseInt(el.target.value)
-                                    }
-                                    updateItem(editted)
-                                }} className='w-10 text-center' defaultValue={e.other_leave} />
+                                {mountedInput ?
+                                    <input disabled={!editable} type='number' id={`other_leave-${e.id}`} onKeyUp={(el) => {
+                                        if (el.key == "Enter") {
+                                            document.getElementById(`other_leave-${e.id}`)!.blur();
+                                        }
+                                    }} onBlur={(el) => {
+                                        let editted = {
+                                            ...e,
+                                            other_leave: parseInt(el.target.value)
+                                        }
+                                        updateItem(editted)
+                                    }} className='w-10 text-center' defaultValue={e.other_leave} />
+                                    : <div className='w-10 h-5'></div>}
                             </td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center`}>
-                                <input disabled={!editable} type='number' id={`absent-${e.id}`} onKeyUp={(el) => {
-                                    if (el.key == "Enter") {
-                                        document.getElementById(`absent-${e.id}`)!.blur();
-                                    }
-                                }} onBlur={(el) => {
-                                    let editted = {
-                                        ...e,
-                                        absent: parseInt(el.target.value)
-                                    }
-                                    updateItem(editted)
-                                }} className='w-10 text-center' defaultValue={e.absent} />
+                                {mountedInput ?
+                                    <input disabled={!editable} type='number' id={`absent-${e.id}`} onKeyUp={(el) => {
+                                        if (el.key == "Enter") {
+                                            document.getElementById(`absent-${e.id}`)!.blur();
+                                        }
+                                    }} onBlur={(el) => {
+                                        let editted = {
+                                            ...e,
+                                            absent: parseInt(el.target.value)
+                                        }
+                                        updateItem(editted)
+                                    }} className='w-10 text-center' defaultValue={e.absent} />
+                                    : <div className='w-10 h-5'></div>}
                             </td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center`}>{money(e.total_incentive, 0)}</td>
                             <td scope="col" className={`px-3 py-1 border text-sm text-center`}>
@@ -413,7 +464,7 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
         <Modal open={modalOpen} onClose={() => {
             setModalOpen(false)
         }}>
-            <Modal.Header>Tambah Karyawan</Modal.Header>
+            <Modal.Header>Tambah Salesman</Modal.Header>
             <Modal.Body>
                 <InlineForm title="Salesman">
                     <TagPicker
@@ -422,6 +473,10 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                         labelKey='full_name'
                         onChange={(val) => {
                             setEmployeeIds(val)
+                        }}
+                        onSearch={(val) => {
+                            if (val)
+                                getAllEmployees(val)
                         }}
                         value={employeeIds}
                         data={employees} className=" block" />
@@ -436,7 +491,7 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
                             await addEmployeeIncentiveReport(incentiveReportId!, employeeId)
                         }
 
-                        getAllEmployees()
+                        getAllEmployees("")
                         getAllIncentives()
                         setModalOpen(false)
                     } catch (error) {
@@ -551,6 +606,113 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
 
                 </Tabs>
 
+            </Modal.Body>
+        </Modal>
+        <Modal size="full" open={modalAttendanceSummaryOpen} onClose={() => {
+            setModalAttendanceSummaryOpen(false)
+            setAttendances([])
+            setLeaves([])
+            setAbsents([])
+            setAttendanceSummary(null)
+        }}>
+            <Modal.Header>
+                <div className='flex justify-between'>
+                    Summary Kehadiran
+
+
+                </div>
+            </Modal.Header>
+            <Modal.Body>
+                <div className='grid grid-cols-2 gap-4 mb-8'>
+                    <Panel header="Data Karyawan" bordered className='' >
+                        <InlineForm title="Name Lengkap" style={{ marginBottom: 10 }}>{attendanceSummary?.employee_name}</InlineForm>
+                        <InlineForm title="Total Hari Kerja" style={{ marginBottom: 10 }}>{money(attendanceSummary?.total_working_days)} Hari</InlineForm>
+                        <InlineForm title="Total Jam Kerja" style={{ marginBottom: 10 }}>{money(attendanceSummary?.total_working_hours)} Jam</InlineForm>
+                        <InlineForm title="Jam Kerja per hari" style={{ marginBottom: 10 }}>{(attendanceSummary?.daily_working_hours)} Jam</InlineForm>
+
+                    </Panel>
+                    <Panel header="Summary" bordered className='' >
+                        <InlineForm title="Total Hari" style={{ marginBottom: 10 }}>{money(attendanceSummary?.total_days)} Hari</InlineForm>
+                        <InlineForm title="Total Hari (Full Time)" style={{ marginBottom: 10 }}>{money(attendanceSummary?.total_full_days)} Hari</InlineForm>
+                        <InlineForm title="Total Jam" style={{ marginBottom: 10 }}>{numberToDuration(attendanceSummary?.total_hours)}</InlineForm>
+                        <InlineForm title="Izin" style={{ marginBottom: 10 }}>
+                            <ul>
+                                {leaves.map(e => (<li key={e.id}>
+                                    {e.request_type == "FULL_DAY" && <small><Moment format='DD/MM/YYYY'>{e.start_date}</Moment>~<Moment format='DD/MM/YYYY'>{e.end_date}</Moment></small>}{' : '}
+                                    {e.description}
+                                </li>))}
+                            </ul>
+                        </InlineForm>
+                        <InlineForm title="Total Sakit" style={{ marginBottom: 10 }}>{money(leaves.filter(e => e.sick).map(e => e.diff).reduce((a, b) => a + b, 0))}</InlineForm>
+                        <InlineForm title="Total Izin" style={{ marginBottom: 10 }}>{money(leaves.filter(e => !e.sick).map(e => e.diff).reduce((a, b) => a + b, 0))}</InlineForm>
+                        <InlineForm title="Total Alpa" style={{ marginBottom: 10 }}>{money(absents.length)}</InlineForm>
+                        {editable &&
+                            <InlineForm title="" style={{ marginBottom: 10 }}>
+                                <Button onClick={() => {
+                                    setModalAttendanceSummaryOpen(false)
+                                    let editted = {
+                                        ...selectedIncentive!,
+                                        sick_leave: leaves.filter(e => e.sick).map(e => e.diff).reduce((a, b) => a + b, 0),
+                                        other_leave: leaves.filter(e => !e.sick).map(e => e.diff).reduce((a, b) => a + b, 0),
+                                        absent: absents.length
+                                    }
+                                    updateItem(editted)
+                                }} size='sm' appearance='primary' color='green'>Update Data Kehadiran</Button>
+                            </InlineForm>
+                        }
+                    </Panel>
+                </div>
+
+                <CustomTable className=''
+
+                    headers={["No", "Tgl", "Absensi", "Durasi", "Overtime", "Keterangan"]} headerClasses={["", "", "", "", "", "w-64"]} datasets={attendances.map(e => ({
+                        cells: [{ data: attendances.indexOf(e) + 1 },
+                        { data: <Moment format='DD MMM YYYY'>{e.clock_in}</Moment> },
+                        {
+                            data: <div className='flex '>
+
+                                <Moment format='HH:mm'>{e.clock_in}</Moment>
+                                {e.clock_out &&
+                                    <span>{' '}{' ~ '}<Moment format='HH:mm'>{e.clock_out}</Moment></span>
+                                }
+
+
+                            </div>
+                        },
+                        {
+                            data:
+                                e.clock_out &&
+                                <div>
+                                    {numberToDuration(moment(e.clock_out).diff(moment(e.clock_in), 'minutes'))}
+                                </div>
+
+
+                        },
+                        {
+                            data: e.overtime &&
+                                <div>
+                                    {`${countOverTime(e)}`}
+                                </div>
+                        },
+                        {
+                            data:
+                                <div>
+                                    <div>
+                                        <p className='font-bold'>Masuk :</p>
+                                        <p>{e.clock_in_notes}</p>
+                                    </div>
+                                    {e.clock_out &&
+                                        <div>
+                                            <p className='font-bold'>Keluar :</p>
+                                            <p>{e.clock_out_notes}</p>
+                                        </div>
+                                    }
+                                </div>
+                        },
+
+
+                        ], className: "hover:bg-gray-50 border-b last:border-b-0"
+                    }))} />
             </Modal.Body>
         </Modal>
     </DashboardLayout>);

@@ -32,6 +32,9 @@ import { SelectOption } from '@/objects/select_option';
 import { colourStyles } from '@/utils/style';
 import { getUsers } from '@/repositories/user';
 import { User } from '@/model/user';
+import { getBanks } from '@/repositories/bank';
+import { Bank } from '@/model/bank';
+import { ItemDataType } from 'rsuite/esm/MultiCascadeTree';
 
 interface EmployeeDetailProps { }
 
@@ -54,6 +57,8 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [totalWorkingDays, setTotalWorkingDays] = useState(0);
     const [totalWorkingHours, setTotalWorkingHours] = useState(0);
+    const [banks, setBanks] = useState<Bank[]>([]);
+    const [selectedBank, setSelectedBank] = useState<ItemDataType<Bank> | string | null>(null)
 
 
 
@@ -73,6 +78,11 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     useEffect(() => {
         getStoragePermissions().then(v => setPermissions(v))
         setMounted(true)
+        getBanks({ page: 1, limit: 0 })
+            .then(v => v.json())
+            .then(v => setBanks(v.data))
+
+
     }, []);
 
     useEffect(() => {
@@ -80,6 +90,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
             setUserId({ value: employee?.user_id ?? "", label: employee?.username })
             setTotalWorkingHours(employee.total_working_hours)
             setTotalWorkingDays(employee.total_working_days)
+            setSelectedBank(`${employee.bank_id}`)
         }
 
     }, [employee]);
@@ -146,6 +157,9 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 meal_allowance: employee?.meal_allowance ?? 0,
                 non_taxable_income_level_code: employee?.non_taxable_income_level_code ?? "",
                 tax_payer_number: employee?.tax_payer_number ?? "",
+                bank_account_number: employee?.bank_account_number ?? "",
+                bank_id: selectedBank ? `${selectedBank}` : null,
+                bank_name: employee?.bank_name ?? "",
                 gender: employee?.gender ?? "",
                 date_of_birth: setNullTime(employee?.date_of_birth ? employee?.date_of_birth : null),
                 started_work: setNullTime(employee?.started_work ? employee?.started_work : null),
@@ -154,6 +168,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 total_working_days: totalWorkingDays,
                 total_working_hours: totalWorkingHours,
                 daily_working_hours: employee?.daily_working_hours ?? 0,
+
             })
             getDetail()
             successToast("Data karyawan berhasil di update")
@@ -300,6 +315,31 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                     job_title_id: val
                                 })
                             }} block />
+                        </InlineForm>
+                        <InlineForm title={'No. Rekening'}>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder={"No Rek"}
+                                value={employee?.bank_account_number ?? ""}
+                                onChange={(el) => {
+                                    setEmployee({
+                                        ...employee!,
+                                        bank_account_number: el.target.value
+                                    })
+                                }}
+                            />
+                        </InlineForm>
+                        <InlineForm title={'Bank'}>
+                            <SelectPicker<ItemDataType<Bank> | string | null>
+                                data={banks} labelKey='name' valueKey={'id'}
+                                value={selectedBank}
+                                onClean={() => setSelectedBank(null)}
+                                onSelect={(val) => {
+                                    
+                                    setSelectedBank(`${val}`)
+                                }} block
+                            />
                         </InlineForm>
 
 

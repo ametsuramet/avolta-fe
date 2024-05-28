@@ -98,9 +98,10 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 						Payroll
 					</Nav.Item>
 
-					{/* <Nav.Item eventKey="/report" icon={<LuBarChartBig className='rs-icon' />}>
-						Laporan
-					</Nav.Item> */}
+				
+					<Nav.Menu placement="rightStart" eventKey="/report" title="Laporan" icon={<LuBarChartBig className='rs-icon' />}>
+						<Nav.Item onClick={() => nav('/report/pay_roll')} eventKey="/report/pay_roll" >Laporan Payroll</Nav.Item>
+					</Nav.Menu>
 					<Nav.Menu placement="rightStart" eventKey="/sales" title="Penjualan" icon={<LuShoppingCart className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/product')} eventKey="/product" >Produk</Nav.Item>
 						<Nav.Item onClick={() => nav('/product_category')} eventKey="/product_category" >Kategori</Nav.Item>

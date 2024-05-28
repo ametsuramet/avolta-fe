@@ -31,6 +31,7 @@ import 'moment/locale/id';
 import { BiBulb } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw'
+import { BsFloppy2 } from 'react-icons/bs';
 
 
 
@@ -43,7 +44,7 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
     const [limit, setLimit] = useState(20);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const { isLoading, setIsLoading } = useContext(LoadingContext);
-    const [jobTitles, setLeaves] = useState<Leave[]>([]);
+    const [leaves, setLeaves] = useState<Leave[]>([]);
     const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -66,6 +67,14 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
     const [remarks, setRemarks] = useState("");
 
 
+    const [pageAbsent, setPageAbsent] = useState(1);
+    const [limitAbsent, setLimitAbsent] = useState(20);
+    const [paginationAbsent, setPaginationAbsent] = useState<Pagination | null>(null);
+    const [absents, setAbsents] = useState<Leave[]>([]);
+    const [searchAbsent, setSearchAbsent] = useState("");
+
+
+
     useEffect(() => {
         getLeaveCategories({ page: 1, limit: 100 })
             .then(v => v.json())
@@ -79,6 +88,10 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
         getAllLeaves()
 
     }, [page, limit, search]);
+    useEffect(() => {
+        getAllAbsents()
+
+    }, [pageAbsent, limitAbsent, searchAbsent]);
 
     useEffect(() => {
         getAllEmployees("")
@@ -94,7 +107,7 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
 
     const getAllLeaves = async () => {
         setIsLoading(true)
-        getLeaves({ page, limit, search })
+        getLeaves({ page, limit, search }, { show_employee: true })
             .then(v => v.json())
             .then(v => {
                 setLeaves(v.data)
@@ -102,6 +115,19 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
             })
             .catch(error => Swal.fire(`Perhatian`, `${error}`, 'error'))
             .finally(() => setIsLoading(false))
+
+    }
+    const getAllAbsents = async () => {
+        setIsLoading(true)
+        getLeaves({ page: pageAbsent, limit: limitAbsent, search: searchAbsent }, { show_employee: true, absent: true })
+            .then(v => v.json())
+            .then(v => {
+                setAbsents(v.data)
+                setPaginationAbsent(v.pagination)
+            })
+            .catch(error => Swal.fire(`Perhatian`, `${error}`, 'error'))
+            .finally(() => setIsLoading(false))
+
     }
 
     const approval = async (appr: string) => {
@@ -186,7 +212,7 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
 
 
     return (<DashboardLayout permission='read_leave'>
-        <div className='grid grid-cols-3 gap-4'>
+        <div className='grid grid-cols-3 gap-4 mb-8'>
             <div className='col-span-3 bg-white rounded-xl p-6 hover:shadow-lg'>
                 <div className='flex justify-between'>
                     <h3 className='font-bold mb-4 text-black text-lg'>{"Cuti / Izin"}</h3>
@@ -204,9 +230,9 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Tgl", "Karyawan", "Jenis", "Kategori", "Keterangan", "Status", ""]} headerClasses={[]} datasets={jobTitles.map(e => ({
+                    headers={["No", "Tgl", "Karyawan", "Jenis", "Kategori", "Keterangan", "Status", ""]} headerClasses={[]} datasets={leaves.map(e => ({
                         cells: [
-                            { data: ((page - 1) * limit) + (jobTitles.indexOf(e) + 1) },
+                            { data: ((page - 1) * limit) + (leaves.indexOf(e) + 1) },
                             {
                                 data: <div>
                                     {e.request_type == "FULL_DAY" && <div><Moment format='DD MMM YYYY' locale='id'>{e.start_date}</Moment>~<Moment format='DD MMM YYYY' locale='id'>{e.end_date}</Moment></div>}
@@ -285,19 +311,127 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
                         ]
                     }))} />
             </div>
-            {/* <div className='col-span-1'>
+
+        </div>
+        <div className='grid grid-cols-3 gap-4 mb-8'>
+            <div className='col-span-2 bg-white rounded-xl p-6 hover:shadow-lg'>
+                <div className='flex justify-between'>
+                    <h3 className='font-bold mb-4 text-black text-lg'>{"Alpa"}</h3>
+                    <div>
+
+
+
+                    </div>
+                </div>
+                <CustomTable
+                    pagination
+                    total={paginationAbsent?.total_records}
+                    limit={limitAbsent}
+                    activePage={pageAbsent}
+                    setActivePage={(v) => setPageAbsent(v)}
+                    changeLimit={(v) => setLimitAbsent(v)}
+                    headers={["No", "Tgl", "Karyawan", "Keterangan", ""]} headerClasses={[]} datasets={absents.map(e => ({
+                        cells: [
+                            { data: ((page - 1) * limit) + (absents.indexOf(e) + 1) },
+                            {
+                                data: <div>
+                                    {e.request_type == "FULL_DAY" && <div><Moment format='DD MMM YYYY' locale='id'>{e.start_date}</Moment>~<Moment format='DD MMM YYYY' locale='id'>{e.end_date}</Moment></div>}
+                                    {e.request_type != "FULL_DAY" && <div className='flex flex-col'>
+                                        <Moment format='DD MMM YYYY' locale='id'>{e.start_date}</Moment>
+                                        <span>{moment(e.start_time, "HH:mm:ss").format("HH:mm")} ~ {moment(e.end_time, "HH:mm:ss").format("HH:mm")}</span>
+                                    </div>}
+                                </div>
+                            },
+                            {
+                                data: <div className=''>
+                                    <Avatar className='mr-2' circle size='xs' bordered src={e.employee_picture}
+                                        alt={initials(e.employee_name)} />
+                                    {e.employee_name}
+                                </div>
+                            },
+
+                            {
+                                data:
+                                    <div className='flex flex-col'>
+                                        <div className='flex justify-between'>
+                                            <div>
+                                                {e.description}
+                                            </div>
+                                            {e.attachment_url &&
+                                                <PaperClipIcon className='ml-2 w-4 cursor-pointer' onClick={() => window.open(e.attachment_url)} />
+                                            }
+
+                                        </div>
+                                        {e.remarks &&
+                                            <div className='flex mt-4 flex-col'>
+                                                <small className='font-bold'>Catatan:</small>
+                                                <ReactMarkdown rehypePlugins={[rehypeRaw]} children={e.remarks} />
+                                            </div>
+                                        }
+                                    </div>
+
+                            },
+                            {
+                                data: <div className='flex cursor-pointer'>
+                                    
+                                    <TrashIcon
+                                        className=" h-5 w-5 text-red-400 hover:text-red-600"
+                                        aria-hidden="true"
+                                        onClick={() => {
+                                            confirmDelete(() => {
+                                                deleteLeave(e.id).then(v => getAllAbsents())
+                                            })
+                                        }}
+                                    />
+                                </div>
+                            }
+                        ]
+                    }))} />
+            </div>
+            <div className='col-span-1'>
                 <div className=' bg-white rounded-xl p-6 hover:shadow-lg'>
-                    <h3 className='font-bold mb-4 text-black text-lg'>{selectedLeave ? "Edit Cuti / Izin" : "Tambah Cuti / Izin"}</h3>
-                    <InlineForm title="Cuti / Izin">
-                        <input placeholder='ex: Manager Produksi' value={name} onChange={(el) => setName(el.target.value)} type="text" className="form-control" />
+                    <h3 className='font-bold mb-4 text-black text-lg'>Tambah Alpa</h3>
+                    <InlineForm title="Pilih Karyawan">
+                        <Select< SelectOption, false> styles={colourStyles}
+                            options={employees.map(e => ({ value: e.id, label: e.full_name }))}
+                            value={selectedEmployee!}
+                            onChange={(option: SingleValue<SelectOption>): void => {
+                                setselectedEmployee(option!)
+                            }}
+                            onInputChange={(val) => {
+                                getAllEmployees(val)
+                            }}
+
+                        />
                     </InlineForm>
-                    <InlineForm title="Keterangan" style={{alignItems: 'start'}}>
-                        <textarea placeholder='ex: Manager produksi pabrik ....' rows={5} value={description} onChange={(el) => setDescription(el.target.value)} className="form-control" />
+                    <InlineForm title="Tanggal">
+                        <DateRangePicker className='w-full' value={dateRange} onChange={(val) => setDateRange(val)} placement="bottomEnd" format='dd/MM/yyyy' />
+
                     </InlineForm>
-                    <Button className='mr-2' appearance='primary' onClick={save}>
+                    <InlineForm title="Keterangan" style={{ alignItems: 'start' }}>
+                        <textarea placeholder='ex: Ijin mau menikah ....' rows={5} value={description} onChange={(el) => setDescription(el.target.value)} className="form-control" />
+                    </InlineForm>
+                    <Button className='mr-2' appearance='primary' onClick={async () => {
+                        try {
+                            setIsLoading(true)
+                            await addLeave({
+                                request_type: "FULL_DAY",
+                                leave_category_id: leaveCategories.find(e => e.absent)?.id!,
+                                employee_id: selectedEmployee?.value!,
+                                description: description,
+                                start_date: dateRange![0].toISOString(),
+                                end_date: dateRange![1]!.toISOString(),
+                            })
+                            getAllAbsents()
+                        } catch (error) {
+                            Swal.fire(`Perhatian`, `${error}`, 'error')
+                        } finally {
+                            setIsLoading(false)
+                        }
+                    }}>
                         <BsFloppy2 className='mr-2' /> Simpan
                     </Button>
-                    {selectedLeave &&
+                    {/* {selectedLeave &&
                         <Button onClick={async () => {
                             setSelectedLeave(null)
                             setName("")
@@ -305,11 +439,10 @@ const LeavePage: FC<LeavePageProps> = ({ }) => {
                         }}>
                             <XMarkIcon className='mr-2 w-5' /> Batal
                         </Button>
-                    }
+                    } */}
                 </div>
-            </div> */}
+            </div>
         </div>
-
         <Modal className='custom-modal' size={"lg"} open={open} onClose={() => setOpen(false)}>
             <Modal.Header>
                 <Modal.Title>Form Cuti / Izin</Modal.Title>

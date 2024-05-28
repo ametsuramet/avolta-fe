@@ -34,18 +34,21 @@ export interface Employee {
   total_working_days: number
   total_working_hours: number
   daily_working_hours: number
-  schedules:  Schedule[]
+  schedules: Schedule[]
+  bank_account_number: string
+  bank_id: string
+  bank_name: string
 }
 
-export interface EmployeeFilter  {
+export interface EmployeeFilter {
   ageRange?: DateRange | null
   employee_id?: string | null
   jobTitleID?: string | null
   gender?: string | null
-  startedWork?: Date  | null
-  startedWorkEnd?: Date  | null
-  download?: boolean  | null
-  skipLinked?: boolean  | null
+  startedWork?: Date | null
+  startedWorkEnd?: Date | null
+  download?: boolean | null
+  skipLinked?: boolean | null
 }
 
 
@@ -71,5 +74,8 @@ export interface EmployeeReq {
   total_working_days?: number
   total_working_hours?: number
   daily_working_hours?: number
+  bank_account_number?: string
+  bank_id?: string | null
+  bank_name?: string
 }
 

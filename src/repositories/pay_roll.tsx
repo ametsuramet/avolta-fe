@@ -34,6 +34,11 @@ export const processPayRoll = async (id: string) => {
         method: "PUT",
     })
 }
+export const finishPayRoll = async (id: string) => {
+    return await customFetch(`admin/payRoll/${id}/Finish`, {
+        method: "PUT",
+    })
+}
 export const paymentPayRoll = async (id: string, req: PayRollPaymentReq) => {
     return await customFetch(`admin/payRoll/${id}/Payment`, {
         method: "PUT",

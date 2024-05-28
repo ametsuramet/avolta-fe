@@ -4,6 +4,23 @@ import { customFetch } from "@/utils/helper"
 import moment from "moment";
 
 
+export const getAttendanceSummaries = async  (employeeId:string, pagination: PaginationReq, filter?: AttendanceFilter) => {
+    const params: Record<string, string> = {
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+
+    };
+    if (pagination.search && pagination.search != "") {
+        params["search"] = pagination.search
+    }
+    if (filter) {
+        if (filter.dateRange) {
+            params["start_date"] = filter.dateRange[0].toISOString()
+            params["end_date"] = moment(filter.dateRange[1]).add(1, 'days').toISOString()
+        }
+    }
+    return await customFetch(`admin/attendance/summary/${employeeId}?${new URLSearchParams(params)}`)
+}
 export const getAttendances = async  (pagination: PaginationReq, filter?: AttendanceFilter) => {
     const params: Record<string, string> = {
         page: pagination.page.toString(),

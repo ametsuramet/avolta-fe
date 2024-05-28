@@ -2,7 +2,7 @@ import CustomTable from '@/components/custom_table';
 import DashboardLayout from '@/components/dashboard_layout';
 import InlineForm from '@/components/inline_form';
 import { Account } from '@/model/account';
-import { Attendance, AttendanceReq } from '@/model/attendance';
+import { Attendance, AttendanceReq, AttendanceSummary } from '@/model/attendance';
 import { Employee } from '@/model/employee';
 import { Leave } from '@/model/leave';
 import { PayRoll, PayRollItemReq } from '@/model/pay_roll';
@@ -10,18 +10,19 @@ import { Reimbursement } from '@/model/reimbursement';
 import { Transaction } from '@/model/transaction';
 import { LoadingContext } from '@/objects/loading_context';
 import { getAccounts } from '@/repositories/account';
-import { addAttendance, deleteAttendance, editAttendance, getAttendances } from '@/repositories/attendance';
+import { addAttendance, deleteAttendance, editAttendance, getAttendanceSummaries, getAttendances } from '@/repositories/attendance';
 import { getEmployeeDetail } from '@/repositories/employee';
 import { getLeaves } from '@/repositories/leave';
-import { editPayRoll, getPayRollDetail, paymentPayRoll, processPayRoll } from '@/repositories/pay_roll';
+import { editPayRoll, finishPayRoll, getPayRollDetail, paymentPayRoll, processPayRoll } from '@/repositories/pay_roll';
 import { addPayRollItem, deletePayRollItem, editPayRollItem } from '@/repositories/pay_roll_item';
 import { getReimbursements } from '@/repositories/reimbursement';
 import { getSettingDetail } from '@/repositories/setting';
 import { addTransaction, getTransactionDetail } from '@/repositories/transaction';
-import { confirmDelete, getDays, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
+import { NON_TAXABLE_CODES } from '@/utils/constant';
+import { confirmDelete, getDays, getStoragePermissions, initials, money, numberToDuration, parseAmount, stringHourToNumber } from '@/utils/helper';
 import { toolTip } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/16/solid';
-import { PlusIcon, RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, PlusIcon, RocketLaunchIcon, TrashIcon } from '@heroicons/react/24/outline';
 import saveAs from 'file-saver';
 import moment from 'moment';
 import 'moment/locale/id';
@@ -52,6 +53,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [totalHours, setTotalHours] = useState(0);
     const [totalOvertime, setTotalOvertime] = useState(0);
     const [leaves, setLeaves] = useState<Leave[]>([]);
+    const [absents, setAbsents] = useState<Leave[]>([]);
     const [itemExpanded, setItemExpanded] = useState(true);
     const [editable, setEditable] = useState(true);
     const [mountedInput, setMountedInput] = useState(true);
@@ -66,6 +68,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
     const [paid, setPaid] = useState(0);
     const [assetAccounts, setAssetAccounts] = useState<Account[]>([]);
     const [selectedAssetAccount, setSelectedAssetAccount] = useState("")
+    const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
+    const [permissions, setPermissions] = useState<string[]>([]);
 
 
 
@@ -73,6 +77,10 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
         getDetail()
         getlAssetAccounts()
         getAllSetting()
+        getStoragePermissions()
+            .then(v => {
+                setPermissions(v)
+            })
     }, []);
 
     const getAllSetting = async () => {
@@ -133,6 +141,9 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
             getReimbursements({ page: 1, limit: 100 }, { employeeID: payRoll?.employee_id, status: "REQUEST" })
                 .then(v => v.json())
                 .then(v => setReimbursements(v.data))
+            getAttendanceSummaries(payRoll.employee_id, { page: 1, limit: 0 }, { dateRange: [moment(payRoll.start_date).toDate(), moment(payRoll.end_date + " 23:59:59").toDate()] })
+                .then(v => v.json())
+                .then(v => setAttendanceSummary(v.data))
         }
     }, [payRoll]);
 
@@ -148,10 +159,18 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
             getLeaves({ page: 1, limit: 100 }, {
                 employeeID: payRoll!.employee_id,
                 status: "APPROVED",
+
                 dateRange: [moment(payRoll!.start_date).toDate(), moment(payRoll!.end_date + " 23:59:59").toDate()]
             })
                 .then(v => v.json())
                 .then(v => setLeaves(v.data))
+            getLeaves({ page: 1, limit: 100 }, {
+                employeeID: payRoll!.employee_id,
+                absent: true,
+                dateRange: [moment(payRoll!.start_date).toDate(), moment(payRoll!.end_date + " 23:59:59").toDate()]
+            })
+                .then(v => v.json())
+                .then(v => setAbsents(v.data))
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -194,6 +213,8 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
             const resp = await getPayRollDetail(payRollId!)
             const respJson = await resp.json()
             setPayRoll(respJson.data)
+
+
         } catch (error) {
             Swal.fire(`Perhatian`, `${error}`, 'error')
         } finally {
@@ -319,9 +340,13 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         <InlineForm title="Status" style={{ marginBottom: 15 }} >
                             {payRoll?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={payRoll?.status} />}
                             {payRoll?.status == "RUNNING" && <Badge className='text-center' color='violet' content={payRoll?.status} />}
-                            {payRoll?.status == "APPROVED" && <Badge className='text-center' color='green' content={payRoll?.status} />}
-                            {payRoll?.status == "REJECTED" && <Badge className='text-center' color='red' content={payRoll?.status} />}
+                            {payRoll?.status == "FINISHED" && <Badge className='text-center' color='green' content={payRoll?.status} />}
                         </InlineForm>
+
+
+                        <InlineForm title="Total Sakit" style={{ marginBottom: 10 }}>{money(leaves.filter(e => e.sick).map(e => e.diff).reduce((a, b) => a + b, 0))}</InlineForm>
+                        <InlineForm title="Total Izin" style={{ marginBottom: 10 }}>{money(leaves.filter(e => !e.sick).map(e => e.diff).reduce((a, b) => a + b, 0))}</InlineForm>
+                        <InlineForm title="Total Alpa" style={{ marginBottom: 10 }}>{money(absents.length)}</InlineForm>
 
                         {payRoll?.status == "DRAFT" &&
                             <Button onClick={async () => {
@@ -330,6 +355,20 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                 }, 'Perhatian', 'Pastikan semua data telah diperiksa', 'Ya Lanjutkan')
 
                             }} appearance='primary' color='violet' className='w-48 h-10 mt-12'><RocketLaunchIcon className='mr-2 text-white w-4' /> Proses Payroll</Button>
+                        }
+                        {payRoll?.status == "RUNNING" &&
+                            <Button onClick={async () => {
+                                confirmDelete(() => {
+                                    setIsLoading(true)
+                                    finishPayRoll(payRollId!)
+                                        .then(() => getDetail())
+                                        .catch((error) => Swal.fire(`Perhatian`, `${error}`, 'error'))
+                                        .finally(() => {
+                                            setIsLoading(true)
+                                        })
+                                }, 'Perhatian', 'Pastikan semua data telah diperiksa', 'Ya Lanjutkan')
+
+                            }} appearance='primary' color='green' className='w-48 h-10 mt-12'><CheckIcon className='mr-2 text-white w-4' /> Selesai</Button>
                         }
                     </Panel>
                     <Panel bordered header="Info Karyawan" className='col-span-2'>
@@ -346,6 +385,9 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                 </InlineForm>
                                 <InlineForm title="Jabatan" style={{ marginBottom: 15 }}>
                                     {employee?.job_title}
+                                </InlineForm>
+                                <InlineForm title="PTKP" style={{ marginBottom: 15 }}>
+                                    {NON_TAXABLE_CODES.find(e => e.value == employee?.non_taxable_income_level_code)?.label}
                                 </InlineForm>
                                 <InlineForm title="Jumlah hari kerja wajib" style={{ marginBottom: 15 }}>
                                     {employee?.total_working_days} Hari
@@ -711,7 +753,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 { data: e.account_destination_name },
                                                 { data: money(e.credit - e.debit, 0), className: "text-right" },
                                                 {
-                                                    data: !e.is_pay_roll_payment && <div>
+                                                    data: permissions.includes("payment_pay_roll") && !e.is_pay_roll_payment && payRoll?.status == "RUNNING" && <div>
                                                         {toolTip("Pembayaran", <LuWallet2 onClick={() => {
                                                             getTransactionDetail(e.id)
                                                                 .then(v => v.json())
@@ -731,7 +773,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 { data: <div className=' font-bold'>Total</div> },
                                                 { data: "" },
                                                 { data: "" },
-                                                { data: money((payRoll?.transactions ?? []).filter(s => !s.is_expense && !s.is_pay_roll_payment).map(s => s.credit).reduce((a, b) => a + b), 0), className: "text-right" },
+                                                { data: money((payRoll?.transactions ?? []).filter(s => !s.is_expense && !s.is_pay_roll_payment).map(s => s.credit).reduce((a, b) => a + b, 0), 0), className: "text-right" },
                                             ]
                                         },
                                         {
@@ -769,7 +811,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                 { data: <div className=' font-bold'>Total</div> },
                                                 { data: "" },
                                                 { data: "" },
-                                                { data: money((payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b), 0), className: "text-right" },
+                                                { data: money((payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b, 0), 0), className: "text-right" },
                                             ]
                                         },
                                         {
@@ -780,7 +822,7 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                                                     data: money(
                                                         (
                                                             (payRoll?.transactions ?? []).filter(s => !s.is_expense && !s.is_pay_roll_payment).map(s => s.credit).reduce((a, b) => a + b, 0) -
-                                                            (payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b)
+                                                            (payRoll?.transactions ?? []).filter(s => s.is_pay_roll_payment).map(s => s.debit).reduce((a, b) => a + b, 0)
                                                         ), 0
                                                     ), className: "text-right"
                                                 },
@@ -957,17 +999,31 @@ const PayRollDetail: FC<PayRollDetailProps> = ({ }) => {
                         </li>)}
                     </ul>
                 </div>
-                <div className=' bg-white rounded-xl p-6 hover:shadow-lg '>
+                <div className=' bg-white rounded-xl p-6 hover:shadow-lg mb-4 '>
                     <div className='flex justify-between'>
                         <h3 className='font-bold mb-4 text-black text-lg'>{"Cuti & Izin"}</h3>
 
                     </div>
-                    <ul>
-                        {leaves.map(e => (<li key={e.id}>
+                    <ul className='mb-8'>
+                        {leaves.map(e => (<li key={e.id} className='mt-4'>
                             <h3 className=' text-lg text-gray-800 leading-5'>{e.description}</h3>
-                            {e.request_type == "FULL_DAY" && <div className='text-sm mt-2'> <Moment format='DD/MM/YYY'>{e.start_date}</Moment> ~ <Moment format='DD/MM/YYY'>{e.end_date}</Moment></div>}
+                            {e.request_type == "FULL_DAY" && <div className='text-sm mt-2'> <Moment format='DD/MM/YYYY'>{e.start_date}</Moment> ~ <Moment format='DD/MM/YYYY'>{e.end_date}</Moment></div>}
                         </li>))}
                     </ul>
+
+                </div>
+                <div className=' bg-white rounded-xl p-6 hover:shadow-lg '>
+                    <div className='flex justify-between'>
+                        <h3 className='font-bold mb-4 text-black text-lg'>{"Alpa"}</h3>
+
+                    </div>
+                    <ul className='mb-8'>
+                        {absents.map(e => (<li key={e.id} className='mt-4'>
+                            <h3 className=' text-lg text-gray-800 leading-5'>{e.description}</h3>
+                            {e.request_type == "FULL_DAY" && <div className='text-sm mt-2'> <Moment format='DD/MM/YYYY'>{e.start_date}</Moment> ~ <Moment format='DD/MM/YYYY'>{e.end_date}</Moment></div>}
+                        </li>))}
+                    </ul>
+
                 </div>
             </div>
         </div>

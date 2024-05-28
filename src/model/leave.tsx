@@ -17,6 +17,10 @@ export interface Leave {
   description: string
   status: string
   remarks: string
+  abent: boolean
+  sick: boolean
+  diff: number
+
 }
 
 export interface LeaveReq {
@@ -40,4 +44,6 @@ export interface LeaveFilter  {
   employeeIDs?: string | null
   employeeID?: string | null
   download?: boolean  | null
+  show_employee?: boolean  | null
+  absent?: boolean  | null
 }

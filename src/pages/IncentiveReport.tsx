@@ -15,7 +15,7 @@ import { useContext, useEffect, useState, type FC } from 'react';
 import { BsFloppy2 } from 'react-icons/bs';
 import Moment from 'react-moment';
 import { useNavigate } from 'react-router-dom';
-import { Button, Modal, TagPicker } from 'rsuite';
+import { Badge, Button, Modal, TagPicker } from 'rsuite';
 import DateRangePicker, { DateRange } from 'rsuite/esm/DateRangePicker';
 import Swal from 'sweetalert2';
 
@@ -105,7 +105,7 @@ const IncentiveReportPage: FC<IncentiveReportPageProps> = ({ }) => {
                     activePage={page}
                     setActivePage={(v) => setPage(v)}
                     changeLimit={(v) => setLimit(v)}
-                    headers={["No", "Tgl", "Nomor Laporan", "Keterangan", ""]} headerClasses={[]} datasets={incentiveReports.map(e => ({
+                    headers={["No", "Tgl", "Nomor Laporan", "Keterangan", "Status", ""]} headerClasses={[]} datasets={incentiveReports.map(e => ({
                         cells: [
                             { data: ((page - 1) * limit) + (incentiveReports.indexOf(e) + 1) },
                             {
@@ -115,6 +115,15 @@ const IncentiveReportPage: FC<IncentiveReportPageProps> = ({ }) => {
                             },
                             { data: e.report_number },
                             { data: e.description },
+                            {
+                                data:
+                                    <div>
+                                        {e?.status == "DRAFT" && <Badge className='text-center' color='yellow' content={e?.status} />}
+                                        {e?.status == "PROCESSING" && <Badge className='text-center' color='blue' content={e?.status} />}
+                                        {e?.status == "APPROVED" && <Badge className='text-center' color='green' content={e?.status} />}
+                                        {e?.status == "REJECTED" && <Badge className='text-center' color='red' content={e?.status} />}
+                                    </div>
+                            },
                             {
                                 data: <div className='flex cursor-pointer justify-end'>
                                     <EyeIcon onClick={() => {

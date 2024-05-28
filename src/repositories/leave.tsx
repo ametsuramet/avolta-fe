@@ -31,6 +31,19 @@ export const getLeaves = async (pagination: PaginationReq, filter?: LeaveFilter)
             params["status"] = filter.status
         }
        
+        if (filter.absent) {
+            params["absent"] = filter.absent ? "1" : "0"
+        }
+        if (filter.show_employee) {
+            params["show_employee"] = filter.show_employee ? "1" : "0"
+        }
+
+     
+       
+    } 
+
+    if (pagination.order) {
+        params["order_by"] = pagination.order
     }
     return await customFetch(`admin/leave?${new URLSearchParams(params)}`)
 
