@@ -45,8 +45,10 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			case "/shop":
 			case "/product_category":
 			case "/sale":
-			case "/incentive/report":
 				return "/sales"
+			case "/report/pay_roll":
+			case "/report/incentive":
+				return "/report"
 
 			default:
 				return location.pathname
@@ -101,13 +103,14 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 				
 					<Nav.Menu placement="rightStart" eventKey="/report" title="Laporan" icon={<LuBarChartBig className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/report/pay_roll')} eventKey="/report/pay_roll" >Laporan Payroll</Nav.Item>
+						<Nav.Item onClick={() => nav('/report/incentive')} eventKey="/report/incentive" >Laporan Insentif</Nav.Item>
 					</Nav.Menu>
 					<Nav.Menu placement="rightStart" eventKey="/sales" title="Penjualan" icon={<LuShoppingCart className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/product')} eventKey="/product" >Produk</Nav.Item>
 						<Nav.Item onClick={() => nav('/product_category')} eventKey="/product_category" >Kategori</Nav.Item>
 						<Nav.Item onClick={() => nav('/shop')} eventKey="/shop" >Toko</Nav.Item>
 						<Nav.Item onClick={() => nav('/sale')} eventKey="/sale" >Penjualan</Nav.Item>
-						<Nav.Item onClick={() => nav('/incentive/report')} eventKey="/incentive/report" >Laporan Insentif</Nav.Item>
+						
 					</Nav.Menu>
 					<Nav.Menu placement="rightStart" eventKey="/setting" title="Pengaturan" icon={<GearCircleIcon className='rs-icon' />}>
 						<Nav.Item onClick={() => nav('/schedule')} eventKey="/schedule" >Jadwal</Nav.Item>

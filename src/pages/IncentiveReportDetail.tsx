@@ -74,7 +74,7 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
         getDetail()
         getAllEmployees("")
     }, [mounted]);
-
+ 
     const getAllEmployees = (s: string) => {
         getEmployees({ page: 1, limit: 5, search: s })
             .then(v => v.json())

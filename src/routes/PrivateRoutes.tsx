@@ -26,6 +26,8 @@ import IncentiveSettingPage from "@/pages/IncentiveSetting"
 import IncentiveReportPage from "@/pages/IncentiveReport"
 import ShopPage from "@/pages/Shop"
 import IncentiveReportDetail from "@/pages/IncentiveReportDetail"
+import PayRollReportPage from "@/pages/PayRollReport"
+import PayRollReportDetail from "@/pages/PayRollReportDetail"
 
 
 interface PrivateRoutesProps { }
@@ -56,8 +58,10 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/product_category' element={<ProductCategoryPage />} />
             <Route path='/shop' element={<ShopPage />} />
             <Route path='/sale' element={<SalePage />} />
-            <Route path='/incentive/report' element={<IncentiveReportPage />} />
-            <Route path='/incentive/report/:incentiveReportId' element={<IncentiveReportDetail />} />
+            <Route path='/report/incentive' element={<IncentiveReportPage />} />
+            <Route path='/report/incentive/:incentiveReportId' element={<IncentiveReportDetail />} />
+            <Route path='/report/pay_roll' element={<PayRollReportPage />} />
+            <Route path='/report/pay_roll/:payRollReportId' element={<PayRollReportDetail />} />
             <Route path='/setting/incentive' element={<IncentiveSettingPage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>

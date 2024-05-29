@@ -1,3 +1,4 @@
+import { DateRange } from "rsuite/esm/DateRangePicker"
 import { Transaction } from "./transaction"
 
 export interface PayRoll {
@@ -85,4 +86,15 @@ export interface PayRollCost {
   bpjs_tk_jht: boolean
   bpjs_tk_jp: boolean
   debt_deposit: boolean
+}
+
+
+export interface PayRollFilter {
+  dateRange?: DateRange | null
+  employeeIDs?: string | null
+  employeeID?: string | null
+  download?: boolean | null
+  skip_items?: boolean | null
+  unreported?: boolean | null
+  orderBy?: string | null
 }

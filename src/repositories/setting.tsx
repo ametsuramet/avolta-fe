@@ -28,3 +28,6 @@ export const getAutoNumber = async () => {
 export const getIncentiveAutoNumber = async () => {
     return await customFetch(`admin/setting/incentive/autonumber`)
 }
+export const getPayRollReportAutoNumber = async () => {
+    return await customFetch(`admin/setting/pay_roll_report/autonumber`)
+}
