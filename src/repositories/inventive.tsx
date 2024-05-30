@@ -24,6 +24,9 @@ export const getIncentives = async (pagination: PaginationReq, filter?: Incentiv
         if (filter.download) {
             params["download"] = "1"
         }
+        if (filter.incentive_report_id) {
+            params["incentive_report_id"] = "1"
+        }
 
        
     }

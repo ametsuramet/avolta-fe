@@ -81,7 +81,7 @@ const IncentiveReportDetail: FC<IncentiveReportDetailProps> = ({ }) => {
             .then(v => setEmployees(v.data))
     }
     const getAllIncentives = () => {
-        getIncentives({ page: 1, limit: 1000 }, { incentive_report_id: incentiveReportId })
+        getIncentives({ page: 1, limit: 0 }, { incentive_report_id: incentiveReportId })
             .then(v => v.json())
             .then(v => {
                 setIncentives(v.data)
