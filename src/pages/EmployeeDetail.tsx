@@ -9,7 +9,7 @@ import { Pagination } from '@/objects/pagination';
 import { getAttendances } from '@/repositories/attendance';
 import { editEmployee, getEmployeeDetail } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
-import { NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
+import { EMPLOYEE_STATUS, NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
 import { asyncLocalStorage, countOverTime, getDays, getFullName, getStoragePermissions, initials, money, numberToDuration, setNullString, setNullTime } from '@/utils/helper';
 import { successToast } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
@@ -59,6 +59,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
     const [totalWorkingHours, setTotalWorkingHours] = useState(0);
     const [banks, setBanks] = useState<Bank[]>([]);
     const [selectedBank, setSelectedBank] = useState<ItemDataType<Bank> | string | null>(null)
+    const [workingType, setWorkingType] = useState("");
 
 
 
@@ -91,6 +92,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
             setTotalWorkingHours(employee.total_working_hours)
             setTotalWorkingDays(employee.total_working_days)
             setSelectedBank(`${employee.bank_id}`)
+            setWorkingType(employee.working_type)
         }
 
     }, [employee]);
@@ -255,6 +257,9 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                 })
                             }} block />
                         </InlineForm>
+                        <InlineForm title="Status Pekerjaan">
+                            <SelectPicker placeholder="Status Pekerjaan" searchable={false} data={EMPLOYEE_STATUS} value={workingType} onSelect={(val) => setWorkingType(val)} block />
+                        </InlineForm>
                         <InlineForm title="Email" >
                             <input disabled={!editable} className='form-control' value={employee?.email ?? ""} onChange={(el) => {
                                 setEmployee({
@@ -333,11 +338,16 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                         <InlineForm title={'Bank'}>
                             <SelectPicker<ItemDataType<Bank> | string | null>
                                 data={banks} labelKey='name' valueKey={'id'}
-                                value={selectedBank}
-                                onClean={() => setSelectedBank(null)}
+                                value={employee?.bank_id}
+                                onClean={() => setEmployee({
+                                    ...employee!,
+                                    bank_id: ""
+                                })}
                                 onSelect={(val) => {
-                                    
-                                    setSelectedBank(`${val}`)
+                                    setEmployee({
+                                        ...employee!,
+                                        bank_id: val
+                                    })
                                 }} block
                             />
                         </InlineForm>

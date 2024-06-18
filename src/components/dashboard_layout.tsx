@@ -24,6 +24,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children, noPadding, permis
     useEffect(() => {
         getStoragePermissions()
             .then(v => {
+                // console.log(v)
                 setPermissions(v)
             })
     }, []);

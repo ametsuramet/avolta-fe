@@ -1,6 +1,7 @@
 export let PERMISSIONS = "permissions"
 export let TOKEN = "token"
 export let PROFILE = "profile"
+export let COMPANY_ID = "company-id"
 
 export let NON_TAXABLE_CODES = [
     { value: "-", label: "Non Pajak" },
@@ -16,6 +17,14 @@ export let NON_TAXABLE_CODES = [
     { value: "K/1/1", label: "Kawin Penghasilan Istri Digabung Dengan Suami 1 Orang Tanggungan" },
     { value: "K/1/2", label: "Kawin Penghasilan Istri Digabung Dengan Suami 2 Orang Tanggungan" },
     { value: "K/1/3", label: "Kawin Penghasilan Istri Digabung Dengan Suami 3 Orang Tanggungan" }
+]
+export let EMPLOYEE_STATUS = [
+    { value: "FULL_TIME", label: "Full Time" },
+    { value: "PART_TIME", label: "Paruh Waktu" },
+    { value: "FREELANCE", label: "Freelance" },
+    { value: "FLEXIBLE", label: "Flexible" },
+    { value: "SHIFT", label: "Shift" },
+    { value: "SEASONAL", label: "Pekerja Musiman" },
 ]
 export let AUTO_NUMERIC_FORMAL = [
     "{month-roman}",

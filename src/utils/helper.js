@@ -1,22 +1,24 @@
-import { TOKEN, PERMISSIONS, PROFILE } from "./constant";
+import { TOKEN, PERMISSIONS, PROFILE, COMPANY_ID } from "./constant";
 import * as CryptoJS from 'crypto-js';
 import Swal from "sweetalert2";
 import moment from 'moment';
 export async function customFetch(...args) {
-    let [resource, config, multipart, fullUrl] = args;
+    let [resource, config, multipart, fullUrl, forceToken] = args;
     const token = await asyncLocalStorage.getItem(TOKEN)
-    // const companyID = localStorage.getItem(SELECTED_COMPANY_ID)
+    const companyID = await asyncLocalStorage.getItem(COMPANY_ID)
     // const merchantID = localStorage.getItem(SELECTED_MERCHANT_ID)
+
+    // console.log("companyID", companyID)
 
     if (!config) {
         config = {
             headers: {
-                authorization: `Bearer ${token ?? null}`
+                authorization: `Bearer ${forceToken ?? token ?? null}`
             }
         }
     } else {
         config["headers"] = {
-            authorization: `Bearer ${token ?? null}`
+            authorization: `Bearer ${forceToken ?? token ?? null}`
         }
     }
 
@@ -24,9 +26,9 @@ export async function customFetch(...args) {
     if (!multipart) {
         config["headers"]["Content-Type"] = "application/json"
     }
-    // if (companyID) {
-    //     config["headers"]["ID-Company"] = companyID
-    // }
+    if (companyID) {
+        config["headers"]["ID-Company"] = companyID
+    }
     // if (merchantID) {
     //     config["headers"]["ID-Merchant"] = merchantID
     // }
@@ -62,6 +64,11 @@ export async function asyncSetStorage({ token, permissions, profile }) {
     await asyncLocalStorage.setItem(PROFILE, JSON.stringify(profile));
 }
 
+
+export async function asyncSetCompanyIDStorage(companyID) {
+    console.log("companyID", companyID)
+    await asyncLocalStorage.setItem(COMPANY_ID, companyID);
+}
 
 export async function getStoragePermissions() {
     let permissions = await asyncLocalStorage.getItem(PERMISSIONS)

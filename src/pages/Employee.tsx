@@ -7,7 +7,7 @@ import { LoadingContext } from '@/objects/loading_context';
 import { Pagination } from '@/objects/pagination';
 import { addEmployee, getEmployees } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
-import { TOKEN } from '@/utils/constant';
+import { EMPLOYEE_STATUS, TOKEN } from '@/utils/constant';
 import { asyncLocalStorage, getFullName, initials, setNullString, setNullTime } from '@/utils/helper';
 import { MagnifyingGlassIcon } from '@heroicons/react/16/solid';
 import { EyeIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -56,6 +56,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
     const [employeeIdentityNumber, setEmployeeIdentityNumber] = useState("")
     const [jobTitleID, setJobTitleID] = useState("")
     const [gender, setGender] = useState("");
+    const [workingType, setWorkingType] = useState("");
 
 
     useEffect(() => {
@@ -101,6 +102,7 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
         setGender("")
         setAddress("")
         setPhone("")
+        setWorkingType("")
         setDateBirth(null)
         setDateStarted(null)
     }
@@ -302,6 +304,9 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                     <InlineForm title="Jenis Kelamin">
                         <SelectPicker placeholder="Jenis Kelamin" searchable={false} data={[{ value: "m", label: "Laki-laki" }, { value: "f", label: "Perempuan" }]} value={gender} onSelect={(val) => setGender(val)} block />
                     </InlineForm>
+                    <InlineForm title="Status Pekerjaan">
+                        <SelectPicker placeholder="Status Pekerjaan" searchable={false} data={EMPLOYEE_STATUS} value={workingType} onSelect={(val) => setWorkingType(val)} block />
+                    </InlineForm>
                     <InlineForm title={'Email'}>
                         <input
                             className="form-control"
@@ -370,6 +375,8 @@ const EmployeePage: FC<EmployeePageProps> = ({ }) => {
                                 non_taxable_income_level_code: '',
                                 tax_payer_number: '',
                                 gender: gender,
+                                working_type: workingType,
+                                work_safety_risks: "low",
                                 date_of_birth: setNullTime(dateBirth ? dateBirth!.toISOString() : null),
                                 started_work: setNullTime(dateStarted ? dateStarted!.toISOString() : null),
                             })

@@ -36,6 +36,8 @@ export interface Employee {
   daily_working_hours: number
   schedules: Schedule[]
   bank_account_number: string
+  working_type: string
+  work_safety_risks: string
   bank_id: string
   bank_name: string
 }
@@ -77,5 +79,7 @@ export interface EmployeeReq {
   bank_account_number?: string
   bank_id?: string | null
   bank_name?: string
+  working_type?: string
+  work_safety_risks?: string
 }
 

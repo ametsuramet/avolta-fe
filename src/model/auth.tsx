@@ -4,6 +4,13 @@ export interface LoginReq {
     fcmToken: string
     device: string
 }
+export interface RegisterReq {
+    full_name: string
+    email: string
+    password: string
+    fcmToken: string
+    device: string
+}
 
 
 export interface Profile {
