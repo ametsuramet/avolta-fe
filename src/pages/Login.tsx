@@ -174,7 +174,7 @@ const Login: FC<LoginProps> = ({ }) => {
                 }
                 } className={`text-white mt-16 inline-flex items-center justify-center bg-blue-300 hover:bg-blue-700 py-2 px-8 w-full font-semibold rounded-xl ${isLoading && 'disabled:cursor-not-allowed'}`}>{isLoading && <FaCircleNotch className='animate-spin mr-2' />} Login</button>
 
-            <div className='mt-4'>  or <Link className='text-blue-400' to="/register">Register Here</Link></div>
+            <div className='mt-4'>  atau <Link className='text-blue-400' to="/register">Daftar disini</Link></div>
         </div>
     }
     return (

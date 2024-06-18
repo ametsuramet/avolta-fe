@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "avolta",
+    "site": "araya-system",
     "public": "dist",
     "ignore": [
       "firebase.json",
