@@ -61,7 +61,7 @@ const Sidebar: FC<SidebarProps> = ({ }) => {
 			<Sidenav.Header>
 				<div className='flex justify-center h-16 flex-col items-center' >
 					{isExpanded ?
-						<img src="/images/logo-avolta.png" alt="" className=' px-2 w-48 text-center' />
+						<img src="/images/logo araya.png" alt="" className=' px-2 w-48 text-center' />
 						:
 						<img src="/images/logo.png" alt="" className=' px-2 w-48 text-center' />
 					}

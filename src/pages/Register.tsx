@@ -15,7 +15,7 @@ const Register: FC<RegisterProps> = ({ }) => {
     return (
         <div className='relative bg-gradient-to-b from-white to-blue-300'>
             <img src="/images/bg.jpg" className='absolute h-full w-full object-cover opacity-40' />
-            <img src="/images/logo-avolta.png" className='absolute top-8 left-8 w-36' />
+            <img src="/images/logo araya.png" className='absolute top-8 left-8 w-36' />
             <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                 <div className='text-center w-[450px] p-12 min-h-10 bg-white shadow-sm z-50 rounded-lg'>
                     <h3 className=' text-3xl font-bold mb-4 text-black' >Daftar</h3>

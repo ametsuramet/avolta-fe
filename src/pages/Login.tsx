@@ -180,7 +180,7 @@ const Login: FC<LoginProps> = ({ }) => {
     return (
         <div className='relative bg-gradient-to-b from-white to-blue-300'>
             <img src="/images/bg.jpg" className='absolute h-full w-full object-cover opacity-40' />
-            <img src="/images/logo-avolta.png" className='absolute top-8 left-8 w-36' />
+            <img src="/images/logo araya.png" className='absolute top-8 left-8 w-36' />
             <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                 {renderLogin()}
             </div>
