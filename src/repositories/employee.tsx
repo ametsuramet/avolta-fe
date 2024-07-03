@@ -50,6 +50,12 @@ export const addEmployee = async (req: EmployeeReq) => {
     })
 }
 
+export const createUser = async (id: string) => {
+    return await customFetch(`admin/employee/${id}/CreateUser`, {
+        method: "POST",
+    })
+}
+
 export const editEmployee = async (id:string, req: EmployeeReq) => {
     return await customFetch(`admin/employee/${id}`, {
         method: "PUT",

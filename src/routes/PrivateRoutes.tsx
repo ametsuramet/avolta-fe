@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { Route, Routes, useParams } from "react-router-dom"
+import { Navigate, Route, Routes, useParams } from "react-router-dom"
 import Home from "../pages/Home"
 import EmployeePage from "@/pages/Employee"
 import NotFound from "@/pages/NotFound"
@@ -64,6 +64,7 @@ const PrivateRoutes: FC<PrivateRoutesProps> = ({ }) => {
             <Route path='/report/pay_roll/:payRollReportId' element={<PayRollReportDetail />} />
             <Route path='/setting/incentive' element={<IncentiveSettingPage />} />
             <Route path="*" element={<NotFound />} />
+            <Route path='/login' element={<Navigate to='/' replace />} />
         </Routes>
     )
 }

@@ -191,6 +191,7 @@ const UserPage: FC<UserPageProps> = ({ }) => {
                     {isAdmin &&
                         <InlineForm title="Hak Akses">
                             <SelectPicker placeholder="Hak Akses" searchable={false}
+                                onClean={() => setRoleId("")}
                                 data={[
                                     { value: "", label: "Pilih Hak Akses" },
                                     ...roles.map(e => ({ value: e.id, label: e.name }))
@@ -198,7 +199,23 @@ const UserPage: FC<UserPageProps> = ({ }) => {
                         </InlineForm>
                     }
                     <InlineForm title="Link Ke Karyawan">
-                        <Select< SelectOption, false> styles={colourStyles}
+                        <SelectPicker block data={[...employees.map(e => ({ value: e.id, label: e.full_name }))]} value={employeeId.value} onSearch={(val) => {
+                            if (val) {
+                                getEmployees({ page: 1, limit: 5, search: val })
+                                .then(v => v.json())
+                                .then(v => {
+                                    setEmployees(v.data)
+                                })
+                            }
+                        }} 
+                        onChange={val => {
+                            let selected = employees.find(e => e.id == val)
+                            if (selected)
+                            setEmployeeId({value: selected?.id!, label: selected?.full_name!})
+                        }}
+                        onClean={() => setEmployeeId({value: "", label: ""})}
+                        />
+                        {/* <Select< SelectOption, false> styles={colourStyles}
                             options={[...employees.map(e => ({ value: e.id, label: e.full_name }))]}
                             value={employeeId}
                             onChange={(option: SingleValue<SelectOption>): void => {
@@ -211,7 +228,7 @@ const UserPage: FC<UserPageProps> = ({ }) => {
                                         setEmployees(v.data)
                                     })
                             }}
-                        />
+                        /> */}
                     </InlineForm>
                     <Button className='mr-2' appearance='primary' onClick={save}>
                         <BsFloppy2 className='mr-2' /> Simpan
@@ -221,6 +238,8 @@ const UserPage: FC<UserPageProps> = ({ }) => {
                             setSelectedUser(null)
                             setName("")
                             setEmail("")
+                            setEmployeeId({value: "", label: ""})
+                            setRoleId("")
                         }}>
                             <XMarkIcon className='mr-2 w-5' /> Batal
                         </Button>

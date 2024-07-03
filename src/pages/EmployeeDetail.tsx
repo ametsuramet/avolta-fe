@@ -7,11 +7,11 @@ import { JobTitle } from '@/model/job_title';
 import { LoadingContext } from '@/objects/loading_context';
 import { Pagination } from '@/objects/pagination';
 import { getAttendances } from '@/repositories/attendance';
-import { editEmployee, getEmployeeDetail } from '@/repositories/employee';
+import { createUser, editEmployee, getEmployeeDetail } from '@/repositories/employee';
 import { getJobTitles } from '@/repositories/job_title';
 import { EMPLOYEE_STATUS, NON_TAXABLE_CODES, TOKEN } from '@/utils/constant';
 import { asyncLocalStorage, countOverTime, getDays, getFullName, getStoragePermissions, initials, money, numberToDuration, setNullString, setNullTime } from '@/utils/helper';
-import { successToast } from '@/utils/helperUi';
+import { errorToast, successToast } from '@/utils/helperUi';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import AvatarIcon from '@rsuite/icons/legacy/Avatar';
 import saveAs from 'file-saver';
@@ -30,7 +30,7 @@ import Swal from 'sweetalert2';
 import Select, { SingleValue } from 'react-select';
 import { SelectOption } from '@/objects/select_option';
 import { colourStyles } from '@/utils/style';
-import { getUsers } from '@/repositories/user';
+import { getUserDetail, getUsers } from '@/repositories/user';
 import { User } from '@/model/user';
 import { getBanks } from '@/repositories/bank';
 import { Bank } from '@/model/bank';
@@ -144,6 +144,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
 
     const update = async () => {
         try {
+            console.log(selectedBank)
             setIsLoading(true)
             await editEmployee(employeeId!, {
                 email: employee?.email ?? "",
@@ -160,8 +161,8 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                 non_taxable_income_level_code: employee?.non_taxable_income_level_code ?? "",
                 tax_payer_number: employee?.tax_payer_number ?? "",
                 bank_account_number: employee?.bank_account_number ?? "",
-                bank_id: selectedBank ? `${selectedBank}` : null,
-                bank_name: employee?.bank_name ?? "",
+                bank_id: employee?.bank_id != "" && employee?.bank_id != null ? `${selectedBank}` : null,
+                bank_name: employee?.bank_name ,
                 gender: employee?.gender ?? "",
                 date_of_birth: setNullTime(employee?.date_of_birth ? employee?.date_of_birth : null),
                 started_work: setNullTime(employee?.started_work ? employee?.started_work : null),
@@ -193,7 +194,43 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
 
                     <Panel header="Data Karyawan" bordered>
                         <InlineForm title={'Link Ke User'}>
-
+                            <SelectPicker
+                            onClean={() => {
+                                setEmployee({
+                                    ...employee!,
+                                    user_id: ""
+                                })
+                            }}
+                             block data={[{ value: "", label: "Pilih User" }, ...users.map(e => ({ value: e.id, label: e.full_name }))]} value={userId?.value}
+                                onChange={(val) => {
+                                    let selected = users.find(e => e.id == val)
+                                    if (selected) {
+                                        setUserId({ value: selected?.id, label: selected?.full_name })
+                                    }
+                                }}
+                                onSearch={(val) => {
+                                    getUsers({ page: 1, limit: 5, search: val })
+                                        .then(v => v.json())
+                                        .then(v => {
+                                            setUsers(v.data)
+                                        })
+                                }}
+                                renderExtraFooter={() => {
+                                    if (users.length == 0) return <div className='py-2 px-4 cursor-pointer hover:bg-gray-50' onClick={() => {
+                                        setIsLoading(true)
+                                        createUser(employeeId!)
+                                            .then(v => getUsers({ page: 1, limit: 5, search: employee?.full_name }))
+                                            .then(v => getDetail())
+                                            .catch(err => errorToast(`${err}`))
+                                            .finally(() => {
+                                                setIsLoading(false)
+                                            })
+                                    }}>Buat User Baru</div>
+                                    return ""
+                                }}
+                                
+                            />
+{/* 
                             <Select< SelectOption, false> styles={colourStyles}
                                 options={[{ value: "", label: "Pilih User" }, ...users.map(e => ({ value: e.id, label: e.full_name }))]}
                                 value={userId}
@@ -207,7 +244,7 @@ const EmployeeDetail: FC<EmployeeDetailProps> = ({ }) => {
                                             setUsers(v.data)
                                         })
                                 }}
-                            />
+                            /> */}
                         </InlineForm>
                         <InlineForm title="Nama Depan" >
                             <input disabled={!editable} className='form-control' value={employee?.first_name ?? ""} onChange={(el) => {

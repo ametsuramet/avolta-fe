@@ -38,8 +38,8 @@ export interface Employee {
   bank_account_number: string
   working_type: string
   work_safety_risks: string
-  bank_id: string
-  bank_name: string
+  bank_id?: string
+  bank_name?: string
 }
 
 export interface EmployeeFilter {
